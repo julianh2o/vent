@@ -19,15 +19,13 @@ TEST(VentState, Payload) {
 }
 
 TEST(VentState, ExitConditions) {
-  VentState state(STATE1_ID, []() { /* no payload */});
+  VentState state(STATE1_ID, []() { /* no payload */ });
 
   int some = 0;
 
   state.addExit(STATE2_ID, [&]() {
     return some == 234;
-  });
-
-  state.addExit(STATE3_ID, [&]() {
+  }).addExit(STATE3_ID, [&]() {
     return some == 123;
   });
   
@@ -39,5 +37,18 @@ TEST(VentState, ExitConditions) {
   EXPECT_EQ(state.tick(), STATE3_ID);
 
   some = 234;
+  EXPECT_EQ(state.tick(), STATE2_ID);
+}
+
+TEST(VentState, ExitOrder) {
+  VentState state(STATE1_ID, []() { /* no payload */ });
+
+  state.addExit(STATE2_ID, [&]() {
+    return true;
+  }).addExit(STATE3_ID, [&]() {
+    return true;
+  });
+
+  // Confirm that the exit to STATE2 has priority over the STATE3 exit.
   EXPECT_EQ(state.tick(), STATE2_ID);
 }

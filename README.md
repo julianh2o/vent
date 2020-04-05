@@ -1,9 +1,10 @@
-# vent
+# Red Team Vent
 
 
 
-# Building
+## Building and Running Tests
 
-make clean; make all
-
-
+```
+cd tests
+make clean; make all; ./main
+```

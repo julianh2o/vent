@@ -12,9 +12,10 @@ void VentState::runPayload() {
   payload_();
 }
 
-void VentState::addExit(int destination_state_id, ExitCondition condition) {
+VentState& VentState::addExit(int destination_state_id, ExitCondition condition) {
   exits_.push_back(
     std::pair<int, ExitCondition>(destination_state_id, condition));
+  return *this;
 }
 
 int VentState::tick() {

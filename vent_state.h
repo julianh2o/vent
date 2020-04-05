@@ -19,7 +19,7 @@ class VentState {
   void runPayload();
 
   // Adds exit to the state with lambda exit conditions.
-  void addExit(int destination_state_id, ExitCondition condition);
+  VentState& addExit(int destination_state_id, ExitCondition condition);
 
   // Returns current state id.
   int getStateId() { return state_id_; }

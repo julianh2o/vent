@@ -24,8 +24,6 @@ LIBS = -lpthread
 
 # All source files:
 SRCS = $(wildcard *.cpp ../*.cpp)
-# SRCS = $(filter-out ../main.cpp, $(wildcard *.cpp ../*.cpp))
-
 
 # All object files:
 #

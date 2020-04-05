@@ -1,18 +1,11 @@
-/**
- * Andrey Timofeev, andrey.v.timofeev@gmail.com
- */
-
 #ifndef VENT_H
 #define VENT_H
 
-class CVent {
-
- private:
-
+class Vent {
 
  public:
-  CVent();
-
+  Vent();
+  ~Vent();
 };
 
 #endif /* VENT_H */

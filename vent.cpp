@@ -1,5 +1,7 @@
 #include "vent.h"
 
-CVent::CVent() {
-  
+Vent::Vent() {
+}
+
+Vent::~Vent() {
 }
