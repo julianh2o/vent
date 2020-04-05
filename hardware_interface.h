@@ -16,6 +16,17 @@ struct SensorState {
   double f1;
 };
 
+//
+// Valve states.
+//
+struct ValveState {
+
+  // State of the V1 valve. True - open, False - Closed.
+  bool v1;
+
+  // State of the V2 valve. True - open, False - Closed.
+  bool v2;
+};
 
 //
 // Values set by knobs and switches on the Control Panel.
@@ -200,6 +211,9 @@ class HardwareInterface {
   // Reads sensor values and stores them to the passed state struct. 
   // Returns true if read succeeded, false otherwise.
   virtual bool readSensors(SensorState* state)=0;
+
+  // Controls valves. Opens or closes valves according to the passed state. 
+  virtual bool setValves(const ValveState& state)=0;
 
   // Reads control values and stores them to the passed state struct.
   // Returns true if read succeeded, false otherwise.

@@ -11,6 +11,12 @@ bool FakeHardware::readSensors(SensorState* state) {
   return true;
 }
 
+bool FakeHardware::setValves(const ValveState& state) {
+  if (!set_valves_return_value) return false;
+  valve_state = state;
+  return true;
+}
+
 bool FakeHardware::readControls(ControlState* state) {
   if (!read_controls_return_value) return false;
   *state = control_state;

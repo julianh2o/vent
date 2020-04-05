@@ -12,6 +12,7 @@ class FakeHardware : public HardwareInterface {
 
   double getSecondsSinceStart() override;
   bool readSensors(SensorState* state) override;
+  bool setValves(const ValveState& state) override;
   bool readControls(ControlState* state) override;
   bool writeIndication(const IndicationState& state) override;
   bool updateDisplay(const DisplayState& state) override;
@@ -24,6 +25,9 @@ class FakeHardware : public HardwareInterface {
 
   bool read_sensors_return_value;
   SensorState sensor_state;
+
+  bool set_valves_return_value;
+  ValveState valve_state;
 
   bool read_controls_return_value;
   ControlState control_state;
