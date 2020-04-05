@@ -4,6 +4,9 @@
 #include "time_counter.h"
 
 
+//
+// Sensor Readings.
+//
 struct SensorState {
 
   // Momentary pressure measurement provided by P1 pressure sensor, [psi].
@@ -14,6 +17,9 @@ struct SensorState {
 };
 
 
+//
+// Values set by knobs and switches on the Control Panel.
+//
 struct ControlState {
 
   // Volume or Pressure target switch.
@@ -49,6 +55,9 @@ struct ControlState {
 };
 
 
+//
+// Status LED and Beeper states.
+//
 struct IndicationState {
 
   // LED is expected to work in four modes:
@@ -85,6 +94,9 @@ struct IndicationState {
 };
 
 
+//
+// Information that need to be rendered on the embedded LCD display.
+//
 struct DisplayState {
 
   // Volume or Pressure target switch position.
@@ -117,9 +129,36 @@ struct DisplayState {
  
   // Peep Pressure, [psi].
   double peep_pressure;
+
+  // The flag indicates whether an alert has been triggred or not. 
+  bool show_alert;
+
+  // The alert message that need to be displayed. Here are possible values (this
+  // may not exactly match):
+  //   "Inspiratory Pressure is too high!"
+  //   "Tidal Volume is too low!"
+  //   "Inhale/Exhale Volumes Mismatch!"
+  //   "Circuit Disconnect!"
+  //   "Apnea Alarm!"
+  //   "Malfunction!"
+  //   etc.
+  // The string is null terminated.
+  char alert_message[128];
+
+  // The flag that indicates that the hint message need to be shown. Hint 
+  // message can occupy part or whole screem. Its purpose is to give guidance,
+  // testing direction, etc.
+  bool show_hint_message;
+
+  // The hint message to show. The message could be:
+  //  "Self-tests passed, the vent is ready. Press Start/Ack to begin."
+  char hint_message[128];
 };
 
 
+//
+// The vent configuration. Contains pressure thresholds and constants.
+//
 struct ConfigState {
   // Inhale Pressure Threshold. It helps detect spontaneous breathing effort.
   double inhale_pressure_threshold;
@@ -143,6 +182,11 @@ struct ConfigState {
   double volume_tolerance;
 };
 
+
+//
+// Hardware interface protocols the interaction between the vent hardware
+// components (sensors, vents and controls), display and vent configuration.
+//
 class HardwareInterface {
 
  public:
