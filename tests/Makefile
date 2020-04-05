@@ -23,7 +23,9 @@ LFLAGS =
 LIBS = -lpthread
 
 # All source files:
-SRCS = $(wildcard *.cpp)
+SRCS = $(wildcard *.cpp ../*.cpp)
+# SRCS = $(filter-out ../main.cpp, $(wildcard *.cpp ../*.cpp))
+
 
 # All object files:
 #
@@ -33,6 +35,7 @@ SRCS = $(wildcard *.cpp)
 # Below we are replacing the suffix .c of all words in the macro SRCS
 # with the .o suffix
 OBJS = $(SRCS:.cpp=.o)
+
 
 # Executable file name:
 MAIN = main
