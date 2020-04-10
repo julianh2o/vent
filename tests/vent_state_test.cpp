@@ -1,6 +1,6 @@
 #include "test_suite.h"
 
-#include "../vent_state.h"
+#include "../src/vent_state.h"
 
 #define STATE1_ID 1
 #define STATE2_ID 2
@@ -28,7 +28,7 @@ TEST(VentState, ExitConditions) {
   }).addExit(STATE3_ID, [&]() {
     return some == 123;
   });
-  
+
   // No state transition.
   EXPECT_EQ(state.tick(), state.getStateId());
   EXPECT_EQ(state.getStateId(), STATE1_ID);

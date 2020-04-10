@@ -1,6 +1,6 @@
 #include "test_suite.h"
 
-#include "../vent_machine.h"
+#include "../src/vent_machine.h"
 
 #define STATE1_ID 1
 #define STATE2_ID 2
