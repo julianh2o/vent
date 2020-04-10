@@ -1,6 +1,6 @@
 #include "test_suite.h"
 
-#include "../fake_hardware.h"
+#include "../src/fake_hardware.h"
 
 
 TEST(FakeHardware, getSecondsSinceStart) {
