@@ -33,7 +33,7 @@ Multiplexer::~Multiplexer() {
 }
 
 void Multiplexer::setMux(uint8_t pin) {
-  digitalWrite(mux0,1 & (pin >> 2)); //low bit
-  digitalWrite(mux1,1 & (pin >> 2)); //mid bit
+  digitalWrite(mux0,1 & (pin >> 0)); //low bit
+  digitalWrite(mux1,1 & (pin >> 1)); //mid bit
   digitalWrite(mux2,1 & (pin >> 2)); //High bit
 }
