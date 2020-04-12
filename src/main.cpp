@@ -33,6 +33,10 @@ void setup() {
   pinMode(MUX1,OUTPUT);
   pinMode(MUX2,OUTPUT);
   pinMode(MUXIO,INPUT);
+
+  digitalWrite(MUX0,LOW);
+  digitalWrite(MUX1,LOW);
+  digitalWrite(MUX2,LOW);
 }
 
 uint8_t r = 0;
