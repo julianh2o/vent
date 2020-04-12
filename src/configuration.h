@@ -5,7 +5,7 @@
 #define MUX0 26
 #define MUX1 27
 #define MUX2 14
-#define MUXOUT 33
+#define MUXIO 33
 
 #define LCD_RESET 12
 #define LCD_CS 5

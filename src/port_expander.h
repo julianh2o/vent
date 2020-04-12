@@ -1,6 +1,7 @@
 #ifndef PORT_EXPANDER_H
 #define PORT_EXPANDER_H
 
+#include <Arduino.h>
 #include <Wire.h>
 
 class PortExpander {

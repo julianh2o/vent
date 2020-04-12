@@ -3,12 +3,17 @@
 #include "hardware_interface.h"
 #include "esp32_hardware.h"
 #include "port_expander.h"
+#include "multiplexer.h"
 
 Esp32Hardware h;
 PortExpander ports(I2C_1_SDA,I2C_1_SCL);
+Multiplexer mux(MUX0,MUX1,MUX2,MUXIO);
 
 void setup() {
   Serial.begin(115200);
+  ports.begin();
+  mux.begin();
+
   Serial.println("Setup begin");
 
   // IO_RST
@@ -26,6 +31,7 @@ void setup() {
 }
 
 uint8_t r = 0;
+uint8_t p = 0;
 void loop() {
   Serial.println(h.getSecondsSinceStart());
   r += 1;
@@ -44,4 +50,11 @@ void loop() {
 
   ports.digitalWrite(4, LOW);
   ports.digitalWrite(3, HIGH);
+
+  if (++p > 7) p = 0;
+  Serial.print("p");
+  Serial.print(p);
+  Serial.print(": ");
+  Serial.print(mux.analogRead(p));
+  Serial.println();
 }
