@@ -7,12 +7,12 @@
 
 Esp32Hardware h;
 PortExpander ports(I2C_1_SDA,I2C_1_SCL);
-Multiplexer mux(MUX0,MUX1,MUX2,MUXIO);
+// Multiplexer mux(MUX0,MUX1,MUX2,MUXIO);
 
 void setup() {
   Serial.begin(115200);
   ports.begin();
-  mux.begin();
+  // mux.begin();
 
   Serial.println("Setup begin");
 
@@ -28,6 +28,11 @@ void setup() {
 
   ports.pinMode(3, OUTPUT);
   ports.pinMode(4, OUTPUT);
+
+  pinMode(MUX0,OUTPUT);
+  pinMode(MUX1,OUTPUT);
+  pinMode(MUX2,OUTPUT);
+  pinMode(MUXIO,INPUT);
 }
 
 uint8_t r = 0;
@@ -51,10 +56,11 @@ void loop() {
   ports.digitalWrite(4, LOW);
   ports.digitalWrite(3, HIGH);
 
-  if (++p > 7) p = 0;
-  Serial.print("p");
-  Serial.print(p);
-  Serial.print(": ");
-  Serial.print(mux.analogRead(p));
-  Serial.println();
+  // if (++p > 7) p = 0;
+  // Serial.print("p");
+  // Serial.print(p);
+  // Serial.print(": ");
+  // Serial.print(mux.analogRead(p));
+  // Serial.println();
+  Serial.println(analogRead(MUXIO));
 }
