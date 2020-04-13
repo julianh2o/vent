@@ -34,10 +34,12 @@ void loop() {
   out("end_inspiratory_pause_button_down", controls.end_inspiratory_pause_button_down);
   out("start_ack_button_down", controls.start_ack_button_down);
 
+  Serial.print("\n");
+
   IndicationState indicate;
   indicate.status_led_mode = i % 2 == 0 ? IndicationState::SOLID_RED : IndicationState::SOLID_GREEN;
   h.writeIndication(indicate);
 
   i++;
-  sleep(1000);
+  delay(1000);
 }

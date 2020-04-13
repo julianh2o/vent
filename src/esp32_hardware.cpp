@@ -15,13 +15,13 @@ bool Esp32Hardware::setValves(const ValveState& state) {
 
 bool Esp32Hardware::readControls(ControlState* state) {
   state->target_switch = ports.digitalRead(PORTS_SWITCH2) ? ControlState::TargetSwitchState::VOLUME : ControlState::TargetSwitchState::PRESSURE;
-  state->tidal_volume = mux.analogRead(MUX_DIAL_1); //TODO convert me
-  state->inspiratory_pressure = mux.analogRead(MUX_DIAL_2); //TODO convert me
+  state->tidal_volume = mux.analogRead(MUX_DIAL_4); //TODO convert me
+  state->inspiratory_pressure = mux.analogRead(MUX_DIAL_3); //TODO convert me
   state->rate_assist_switch = ports.digitalRead(PORTS_SWITCH1);
-  state->respiratory_rate = mux.analogRead(MUX_DIAL_3); //TODO convert me
-  state->inhale_exhale_ratio = mux.analogRead(MUX_DIAL_4); //TODO convert me
-  state->end_inspiratory_pause_button_down = ports.digitalRead(PORTS_BUTTON1);
-  state->start_ack_button_down = ports.digitalRead(PORTS_BUTTON2);
+  state->respiratory_rate = mux.analogRead(MUX_DIAL_2); //TODO convert me
+  state->inhale_exhale_ratio = mux.analogRead(MUX_DIAL_1); //TODO convert me
+  state->end_inspiratory_pause_button_down = ports.digitalRead(PORTS_BUTTON2);
+  state->start_ack_button_down = ports.digitalRead(PORTS_BUTTON1);
   return true;
 }
 
