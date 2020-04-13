@@ -115,7 +115,7 @@ void PortExpander::pinMode(uint8_t pin, uint8_t mode) {
   updateRegisterBit(pin,(mode==INPUT),MCP23017_IODIRA,MCP23017_IODIRB);
 }
 
-void PortExpander::digitalWrite(uint8_t pin, uint8_t value) {
+void PortExpander::digitalWrite(uint8_t pin, bool value) {
   uint8_t gpio;
   uint8_t bit=bitForPin(pin);
 
@@ -130,6 +130,16 @@ void PortExpander::digitalWrite(uint8_t pin, uint8_t value) {
   // write the new GPIO
   regAddr=regForPin(pin,MCP23017_GPIOA,MCP23017_GPIOB);
   writeRegister(regAddr,gpio);
+}
+
+bool PortExpander::digitalRead(uint8_t pin) {
+  uint8_t gpio;
+  uint8_t bit=bitForPin(pin);
+
+  uint8_t regAddr=regForPin(pin,MCP23017_GPIOA,MCP23017_GPIOB);
+  gpio = readRegister(regAddr);
+
+  return bitRead(gpio,bit);
 }
 
 PortExpander::PortExpander(uint8_t port_sda, uint8_t port_scl) : sda(port_sda), scl(port_scl) {

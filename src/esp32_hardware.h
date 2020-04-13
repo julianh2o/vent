@@ -2,6 +2,9 @@
 #define ESP32_HARDWARE_H
 
 #include "hardware_interface.h"
+#include "port_expander.h"
+#include "multiplexer.h"
+#include "configuration.h"
 
 class Esp32Hardware : public HardwareInterface {
 
@@ -18,25 +21,8 @@ public:
   Esp32Hardware();
   virtual ~Esp32Hardware();
 
-  double seconds_since_start;
-
-  bool read_sensors_return_value;
-  SensorState sensor_state;
-
-  bool set_valves_return_value;
-  ValveState valve_state;
-
-  bool read_controls_return_value;
-  ControlState control_state;
-
-  bool write_indication_return_value;
-  IndicationState indication_state;
-
-  bool update_display_return_value;
-  DisplayState display_state;
-
-  bool get_config_return_value;
-  ConfigState config_state;
+  PortExpander ports;
+  Multiplexer mux;
 };
 
 #endif  // ESP32_HARDWARE_H

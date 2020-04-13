@@ -7,6 +7,33 @@
 #define MUX2 14
 #define MUXIO 33
 
+//Port expander portA
+#define PORTS_24V_1 0
+#define PORTS_24V_2 1
+#define PORTS_24V_3 2
+#define PORTS_LED1 3
+#define PORTS_LED2 4
+
+//Port expander portB
+#define PORTS_F1_PWR 8
+#define PORTS_F1_HTR 9
+#define PORTS_BUTTON1 10
+#define PORTS_BUTTON2 11
+#define PORTS_SWITCH1 12
+#define PORTS_SWITCH2 13
+#define PORTS_F2_PWR 14
+#define PORTS_F2_HTR 15
+
+//Mux ports
+#define MUX_DAC 0
+#define MUX_DIAL_1 1
+#define MUX_DIAL_2 2
+#define MUX_DIAL_3 3
+#define MUX_DIAL_4 4
+#define MUX_V33 5
+#define MUX_TH1AN 6
+#define MUX_TH2AN 7
+
 #define LCD_RESET 12
 #define LCD_CS 5
 #define LCD_DC 15

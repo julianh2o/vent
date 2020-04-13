@@ -4,15 +4,12 @@
 #include "esp32_hardware.h"
 #include "port_expander.h"
 #include "multiplexer.h"
+#include "utils.h"
 
 Esp32Hardware h;
-PortExpander ports(I2C_1_SDA,I2C_1_SCL);
-Multiplexer mux(MUX0,MUX1,MUX2,MUXIO);
 
 void setup() {
   Serial.begin(115200);
-  ports.begin();
-  mux.begin();
 
   Serial.println("Setup begin");
 
@@ -21,40 +18,26 @@ void setup() {
   digitalWrite(2, LOW);
   delay(1000);
   digitalWrite(2, HIGH);
-
-  ports.pinMode(0, OUTPUT);
-  ports.pinMode(1, OUTPUT);
-  ports.pinMode(2, OUTPUT);
-
-  ports.pinMode(3, OUTPUT);
-  ports.pinMode(4, OUTPUT);
 }
 
-uint8_t r = 0;
-uint8_t p = 0;
+uint8_t i = 0;
 void loop() {
-  Serial.println(h.getSecondsSinceStart());
-  r += 1;
-  if (r > 3) r = 0;
+  ControlState controls;
+  h.readControls(&controls);
 
-  ports.digitalWrite(0, r == 1);
-  ports.digitalWrite(1, r == 2);
-  ports.digitalWrite(2, r == 3);
+  out("target_switch", controls.target_switch);
+  out("tidal_volume", controls.tidal_volume);
+  out("inspiratory_pressure", controls.inspiratory_pressure);
+  out("rate_assist_switch", controls.rate_assist_switch);
+  out("respiratory_rate", controls.respiratory_rate);
+  out("inhale_exhale_ratio", controls.inhale_exhale_ratio);
+  out("end_inspiratory_pause_button_down", controls.end_inspiratory_pause_button_down);
+  out("start_ack_button_down", controls.start_ack_button_down);
 
-  delay(250);
+  IndicationState indicate;
+  indicate.status_led_mode = i % 2 == 0 ? IndicationState::SOLID_RED : IndicationState::SOLID_GREEN;
+  h.writeIndication(indicate);
 
-  ports.digitalWrite(4, HIGH);
-  ports.digitalWrite(3, LOW);
-
-  delay(250);
-
-  ports.digitalWrite(4, LOW);
-  ports.digitalWrite(3, HIGH);
-
-  if (++p > 7) p = 0;
-  Serial.print("p");
-  Serial.print(p);
-  Serial.print(": ");
-  Serial.print(mux.analogRead(p));
-  Serial.println();
+  i++;
+  sleep(1000);
 }

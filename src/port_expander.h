@@ -12,9 +12,9 @@ public:
 
   void begin();
 
-  //TODO these should probaby not be ints.. u_int8s maybe?
   void pinMode(uint8_t pin, uint8_t mode);
-  void digitalWrite(uint8_t pin, uint8_t value);
+  void digitalWrite(uint8_t pin, bool value);
+  bool digitalRead(uint8_t pin);
 
 private:
   uint8_t sda;
