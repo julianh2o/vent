@@ -18,6 +18,8 @@ void setup() {
   digitalWrite(2, LOW);
   delay(1000);
   digitalWrite(2, HIGH);
+
+  h.runTest();
 }
 
 uint8_t i = 0;

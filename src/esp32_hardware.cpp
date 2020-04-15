@@ -42,7 +42,11 @@ bool Esp32Hardware::getConfig(ConfigState* state) {
   return false;
 }
 
-Esp32Hardware::Esp32Hardware() : HardwareInterface(), ports(I2C_1_SDA,I2C_1_SCL), mux(MUX0,MUX1,MUX2,MUXIO) {
+void Esp32Hardware::runTest() {
+  screen.runTest();
+}
+
+Esp32Hardware::Esp32Hardware() : HardwareInterface(), ports(I2C_1_SDA,I2C_1_SCL), mux(MUX0,MUX1,MUX2,MUXIO), screen(LCD_CS, LCD_DC) {
   ports.begin();
   mux.begin();
 

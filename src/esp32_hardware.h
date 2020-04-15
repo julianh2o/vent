@@ -5,11 +5,11 @@
 #include "port_expander.h"
 #include "multiplexer.h"
 #include "configuration.h"
+#include "screen.h"
 
 class Esp32Hardware : public HardwareInterface {
 
 public:
-
   double getSecondsSinceStart() override;
   bool readSensors(SensorState* state) override;
   bool setValves(const ValveState& state) override;
@@ -18,11 +18,14 @@ public:
   bool updateDisplay(const DisplayState& state) override;
   bool getConfig(ConfigState* state) override;
 
+  void runTest();
+
   Esp32Hardware();
   virtual ~Esp32Hardware();
 
   PortExpander ports;
   Multiplexer mux;
+  Screen screen;
 };
 
 #endif  // ESP32_HARDWARE_H
