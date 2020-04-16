@@ -34,9 +34,12 @@
 #define MUX_TH1AN 6
 #define MUX_TH2AN 7
 
-#define LCD_RESET 12
 #define LCD_CS 5
 #define LCD_DC 15
+#define LCD_MOSI 23
+#define LCD_SCLK 18
+#define LCD_RST 12
+#define LCD_MISO 19
 
 #define I2C_1_SDA 21
 #define I2C_1_SCL 22

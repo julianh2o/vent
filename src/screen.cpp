@@ -46,7 +46,7 @@ void Screen::runTest(void) {
   tft.println("see if I don't!");
 }
 
-Screen::Screen(uint8_t cs, uint8_t dc) : tft(cs, dc) {
+Screen::Screen(uint8_t cs, uint8_t dc, uint8_t mosi, int8_t sclk, uint8_t rst,  uint8_t miso) : tft(cs, dc, mosi, sclk, rst, miso) {
 }
 
 Screen::~Screen() {

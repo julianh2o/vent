@@ -46,7 +46,7 @@ void Esp32Hardware::runTest() {
   screen.runTest();
 }
 
-Esp32Hardware::Esp32Hardware() : HardwareInterface(), ports(I2C_1_SDA,I2C_1_SCL), mux(MUX0,MUX1,MUX2,MUXIO), screen(LCD_CS, LCD_DC) {
+Esp32Hardware::Esp32Hardware() : HardwareInterface(), ports(I2C_1_SDA,I2C_1_SCL), mux(MUX0,MUX1,MUX2,MUXIO), screen(LCD_CS, LCD_DC, LCD_MOSI, LCD_SCLK, LCD_RST, LCD_MISO) {
   ports.begin();
   mux.begin();
 
