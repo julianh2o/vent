@@ -18,7 +18,9 @@ public:
   bool updateDisplay(const DisplayState& state) override;
   bool getConfig(ConfigState* state) override;
 
+  void begin();
   void runTest();
+  void tick(uint16_t i);
 
   Esp32Hardware();
   virtual ~Esp32Hardware();

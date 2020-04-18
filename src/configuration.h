@@ -47,6 +47,11 @@
 #define I2C_2_SDA 13
 #define I2C_2_SCL 4
 
+#define PRESSURE_1 36
+#define PRESSURE_2 39
+#define PRESSURE_3 34
+#define PRESSURE_4 35
+
 #define SPKR 32
 
 #define IO_RST 2

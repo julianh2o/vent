@@ -31,23 +31,6 @@
 
 #define MCP23017_INT_ERR 255
 
-// minihelper to keep Arduino backward compatibility
-static inline void wiresend(uint8_t x) {
-#if ARDUINO >= 100
-  Wire.write((uint8_t) x);
-#else
-  Wire.send(x);
-#endif
-}
-
-static inline uint8_t wirerecv(void) {
-#if ARDUINO >= 100
-  return Wire.read();
-#else
-  return Wire.receive();
-#endif
-}
-
 /**
  * Reads a given register
  */

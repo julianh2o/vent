@@ -6,6 +6,12 @@ double Esp32Hardware::getSecondsSinceStart() {
 }
 
 bool Esp32Hardware::readSensors(SensorState* state) {
+  //pressure
+  state->p1 = analogRead(PRESSURE_1);
+
+  //flow
+  state->f1 = 0;
+
   return false;
 }
 
@@ -46,9 +52,43 @@ void Esp32Hardware::runTest() {
   screen.runTest();
 }
 
+void Esp32Hardware::tick(uint16_t i) {
+  ControlState controls;
+  readControls(&controls);
+  // if (i % 2 == 0) {
+    screen.tft.setCursor(0, 0);
+    screen.tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+    screen.tft.setTextSize(2);
+
+    screen.tft.print("tidal_v: ");
+    screen.tft.print(controls.tidal_volume);
+    screen.tft.print("    ");
+    screen.tft.println();
+
+    screen.tft.print("resp_rate: ");
+    screen.tft.print(controls.respiratory_rate);
+    screen.tft.print("    ");
+    screen.tft.println();
+
+    screen.tft.print("brth_ratio: ");
+    screen.tft.print(controls.inhale_exhale_ratio);
+    screen.tft.print("    ");
+    screen.tft.println();
+
+    screen.tft.print("inspir_pressure: ");
+    screen.tft.print(controls.inspiratory_pressure);
+    screen.tft.print("    ");
+    screen.tft.println();
+  // }
+}
+
 Esp32Hardware::Esp32Hardware() : HardwareInterface(), ports(I2C_1_SDA,I2C_1_SCL), mux(MUX0,MUX1,MUX2,MUXIO), screen(LCD_CS, LCD_DC, LCD_MOSI, LCD_SCLK, LCD_RST, LCD_MISO) {
+}
+
+void Esp32Hardware::begin() {
   ports.begin();
   mux.begin();
+  screen.begin();
 
   ports.pinMode(PORTS_24V_1,OUTPUT);
   ports.pinMode(PORTS_24V_2,OUTPUT);

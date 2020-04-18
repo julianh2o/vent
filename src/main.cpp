@@ -19,29 +19,35 @@ void setup() {
   delay(1000);
   digitalWrite(2, HIGH);
 
-  h.runTest();
+  h.begin();
 }
 
-uint8_t i = 0;
+void tick(uint16_t i) {
+  // if (i % 10 == 0) {
+  //   ControlState controls;
+  //   h.readControls(&controls);
+  //
+  //   out("target_switch", controls.target_switch);
+  //   out("tidal_volume", controls.tidal_volume);
+  //   out("inspiratory_pressure", controls.inspiratory_pressure);
+  //   out("rate_assist_switch", controls.rate_assist_switch);
+  //   out("respiratory_rate", controls.respiratory_rate);
+  //   out("inhale_exhale_ratio", controls.inhale_exhale_ratio);
+  //   out("end_inspiratory_pause_button_down", controls.end_inspiratory_pause_button_down);
+  //   out("start_ack_button_down", controls.start_ack_button_down);
+  //
+  //   Serial.print("\n");
+  //
+  //   IndicationState indicate;
+  //   indicate.status_led_mode = i % 2 == 0 ? IndicationState::SOLID_RED : IndicationState::SOLID_GREEN;
+  //   h.writeIndication(indicate);
+  // }
+
+  h.tick(i);
+}
+
+uint8_t tickCounter = 0;
 void loop() {
-  ControlState controls;
-  h.readControls(&controls);
-
-  out("target_switch", controls.target_switch);
-  out("tidal_volume", controls.tidal_volume);
-  out("inspiratory_pressure", controls.inspiratory_pressure);
-  out("rate_assist_switch", controls.rate_assist_switch);
-  out("respiratory_rate", controls.respiratory_rate);
-  out("inhale_exhale_ratio", controls.inhale_exhale_ratio);
-  out("end_inspiratory_pause_button_down", controls.end_inspiratory_pause_button_down);
-  out("start_ack_button_down", controls.start_ack_button_down);
-
-  Serial.print("\n");
-
-  IndicationState indicate;
-  indicate.status_led_mode = i % 2 == 0 ? IndicationState::SOLID_RED : IndicationState::SOLID_GREEN;
-  h.writeIndication(indicate);
-
-  i++;
-  delay(1000);
+  tick(tickCounter++);
+  delay(200);
 }
