@@ -24,4 +24,4 @@ void out(const char text[], bool v) {
   Serial.print("\n");
 }
 
-#endif
+#endif //UTILS_H

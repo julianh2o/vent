@@ -12,5 +12,4 @@ make clean; make all; ./main
 * Install platform IO: https://platformio.org/
 * Upload using the IDE or `platformio run -t upload`
 
-TODO:
-* Test LCD library: https://platformio.org/lib/show/571/Adafruit%20ILI9341
+Flow Sensor Datasheet: https://www.sensirion.com/en/flow-sensors/mass-flow-meters-for-high-precise-measurement-of-gases/proximal-flow-sensors-sfm3300-autoclavable-washable-or-single-use/

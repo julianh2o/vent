@@ -19,14 +19,27 @@ bool Esp32Hardware::setValves(const ValveState& state) {
   return false;
 }
 
+//Perform a simple linear scale for our dials
+double normalizeDial(double min, double max, int value, double divisions, bool invert) {
+  double normalizedInput = ((double)value - DIAL_MIN) / (DIAL_MAX - DIAL_MIN);
+  if (normalizedInput < 0) normalizedInput = 0;
+  if (normalizedInput > 1) normalizedInput = 1;
+  if (invert) normalizedInput = 1-normalizedInput;
+  double normalizedOutput = min + normalizedInput * (max - min);
+  int n = normalizedOutput / divisions;
+  normalizedOutput = n * divisions;
+  return normalizedOutput;
+}
+
 //TODO deprecate this function in favor of getControlState?
 bool Esp32Hardware::readControls(ControlState* state) {
   state->target_switch = ports.digitalRead(PORTS_SWITCH2) ? ControlState::TargetSwitchState::VOLUME : ControlState::TargetSwitchState::PRESSURE;
-  state->tidal_volume = mux.analogRead(MUX_DIAL_4); //TODO convert me
-  state->inspiratory_pressure = mux.analogRead(MUX_DIAL_3); //TODO convert me
-  state->rate_assist_switch = ports.digitalRead(PORTS_SWITCH1);
-  state->respiratory_rate = mux.analogRead(MUX_DIAL_2); //TODO convert me
-  state->inhale_exhale_ratio = mux.analogRead(MUX_DIAL_1); //TODO convert me
+  state->tidal_volume = normalizeDial(CONTROL_TIDAL_VOLUME_MIN,CONTROL_TIDAL_VOLUME_MAX,mux.analogRead(MUX_DIAL_4),CONTROL_TIDAL_VOLUME_DIVISIONS,CONTROL_TIDAL_VOLUME_INVERT);
+  state->inspiratory_pressure = normalizeDial(CONTROL_INSP_PRESSURE_MIN,CONTROL_INSP_PRESSURE_MAX,mux.analogRead(MUX_DIAL_3),CONTROL_INSP_PRESSURE_DIVISIONS,CONTROL_INSP_PRESSURE_INVERT);
+  state->rate_assist_switch = !ports.digitalRead(PORTS_SWITCH1);
+  state->respiratory_rate = normalizeDial(CONTROL_RESP_RATE_MIN,CONTROL_RESP_RATE_MAX,mux.analogRead(MUX_DIAL_2),CONTROL_RESP_RATE_DIVISIONS,CONTROL_RESP_RATE_INVERT);
+  state->inhale_exhale_ratio = normalizeDial(CONTROL_INHALE_RATIO_MIN,CONTROL_INHALE_RATIO_MAX,mux.analogRead(MUX_DIAL_1),CONTROL_INHALE_RATIO_DIVISIONS,CONTROL_INHALE_RATIO_INVERT);
+
   state->end_inspiratory_pause_button_down = pause.isPressed();
   state->start_ack_button_down = start.isPressed();
   return true;
@@ -106,8 +119,25 @@ void Esp32Hardware::tick(uint16_t i) {
     screen.tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
     screen.tft.setTextSize(2);
 
+    screen.tft.print("mode: ");
+    screen.tft.print(controlState.target_switch == ControlState::PRESSURE ? "Pressure" : "Volume");
+    screen.tft.print("    ");
+    screen.tft.println();
+
     screen.tft.print("tidal_v: ");
     screen.tft.print(controlState.tidal_volume);
+    screen.tft.print("    ");
+    screen.tft.println();
+
+    screen.tft.print("inspir_pressure: ");
+    screen.tft.print(controlState.inspiratory_pressure);
+    screen.tft.print("    ");
+    screen.tft.println();
+
+    screen.tft.println();
+
+    screen.tft.print("rate assist: ");
+    screen.tft.print(controlState.rate_assist_switch ? "ON" : "OFF");
     screen.tft.print("    ");
     screen.tft.println();
 
@@ -118,11 +148,6 @@ void Esp32Hardware::tick(uint16_t i) {
 
     screen.tft.print("brth_ratio: ");
     screen.tft.print(controlState.inhale_exhale_ratio);
-    screen.tft.print("    ");
-    screen.tft.println();
-
-    screen.tft.print("inspir_pressure: ");
-    screen.tft.print(controlState.inspiratory_pressure);
     screen.tft.print("    ");
     screen.tft.println();
 
