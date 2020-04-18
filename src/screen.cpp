@@ -4,7 +4,7 @@
 #include "Adafruit_ILI9341.h"
 
 void Screen::begin() {
-  tft.begin();
+  tft.begin(20/*MHZ*/*1000000);
   tft.setRotation(1);
 
   tft.fillScreen(ILI9341_BLACK);
@@ -35,7 +35,8 @@ void Screen::runTest(void) {
   tft.println("see if I don't!");
 }
 
-Screen::Screen(uint8_t cs, uint8_t dc, uint8_t mosi, int8_t sclk, uint8_t rst,  uint8_t miso) : tft(cs, dc, mosi, sclk, rst, miso) {
+// Screen::Screen(uint8_t cs, uint8_t dc, uint8_t mosi, int8_t sclk, uint8_t rst,  uint8_t miso) : tft(cs, dc, mosi, sclk, rst, miso) {
+Screen::Screen(uint8_t cs, uint8_t dc, uint8_t mosi, int8_t sclk, uint8_t rst,  uint8_t miso) : tft(cs, dc, rst) {
 }
 
 Screen::~Screen() {
