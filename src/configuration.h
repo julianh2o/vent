@@ -52,7 +52,7 @@
 #define PRESSURE_3 34
 #define PRESSURE_4 35
 
-#define SPKR 32
+#define BUZZER 32
 
 #define IO_RST 2
 

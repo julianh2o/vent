@@ -5,6 +5,8 @@
 #include "port_expander.h"
 #include "multiplexer.h"
 #include "utils.h"
+#include "button_debouncer.h"
+#include "buzzer.h"
 
 Esp32Hardware h;
 
@@ -13,11 +15,10 @@ void setup() {
 
   Serial.println("Setup begin");
 
-  // IO_RST
-  pinMode(2, OUTPUT);
-  digitalWrite(2, LOW);
+  pinMode(IO_RST, OUTPUT);
+  digitalWrite(IO_RST, LOW);
   delay(1000);
-  digitalWrite(2, HIGH);
+  digitalWrite(IO_RST, HIGH);
 
   h.begin();
 }
@@ -38,9 +39,6 @@ void tick(uint16_t i) {
   //
   //   Serial.print("\n");
   //
-  //   IndicationState indicate;
-  //   indicate.status_led_mode = i % 2 == 0 ? IndicationState::SOLID_RED : IndicationState::SOLID_GREEN;
-  //   h.writeIndication(indicate);
   // }
 
   h.tick(i);
@@ -49,5 +47,5 @@ void tick(uint16_t i) {
 uint8_t tickCounter = 0;
 void loop() {
   tick(tickCounter++);
-  delay(200);
+  delay(20);
 }
