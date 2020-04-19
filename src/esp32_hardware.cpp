@@ -10,9 +10,17 @@ bool Esp32Hardware::readSensors(SensorState* state) {
   state->p1 = analogRead(PRESSURE_1);
 
   //flow
-  state->f1 = 0;
+  state->f1 = flow1.read();
 
   return false;
+}
+
+const SensorState * Esp32Hardware::getSensorState() {
+  return &sensorState;
+}
+
+void Esp32Hardware::updateSensorState() {
+  readSensors(&sensorState);
 }
 
 bool Esp32Hardware::setValves(const ValveState& state) {
@@ -96,7 +104,7 @@ void Esp32Hardware::runTest() {
 }
 
 //This contains testing/demo behavior that is not critical to operation
-void Esp32Hardware::testModeTick(uint16_t i) {
+void Esp32Hardware::testModeTick() {
   if (start.hasPressed()) buzzer.shortBeep();
   if (pause.hasPressed()) buzzer.longBeep();
 
@@ -105,13 +113,13 @@ void Esp32Hardware::testModeTick(uint16_t i) {
   writeIndication(indicate);
 }
 
-void Esp32Hardware::tick(uint16_t i) {
+void Esp32Hardware::tick() {
   buzzer.tick();
   start.tick(!ports.digitalRead(PORTS_BUTTON1));
   pause.tick(!ports.digitalRead(PORTS_BUTTON2));
   updateControlState();
 
-  testModeTick(i);
+  testModeTick();
 
   if (controlStateUpdated) {
     controlStateUpdated = false;
@@ -163,7 +171,12 @@ void Esp32Hardware::tick(uint16_t i) {
   }
 }
 
-Esp32Hardware::Esp32Hardware() : HardwareInterface(), ports(I2C_1_SDA,I2C_1_SCL), mux(MUX0,MUX1,MUX2,MUXIO), screen(LCD_CS, LCD_DC, LCD_MOSI, LCD_SCLK, LCD_RST, LCD_MISO), buzzer(BUZZER, 0) {
+Esp32Hardware::Esp32Hardware() : HardwareInterface(),
+  ports(I2C_1_SDA,I2C_1_SCL,IO_RST),
+  mux(MUX0,MUX1,MUX2,MUXIO),
+  screen(LCD_CS, LCD_DC, LCD_MOSI, LCD_SCLK, LCD_RST, LCD_MISO),
+  buzzer(BUZZER, 0),
+  flow1(I2C_1_SDA,I2C_1_SCL) {
 }
 
 void Esp32Hardware::begin() {
@@ -171,6 +184,7 @@ void Esp32Hardware::begin() {
   mux.begin();
   screen.begin();
   buzzer.begin();
+  flow1.begin();
 
   ports.pinMode(PORTS_24V_1,OUTPUT);
   ports.pinMode(PORTS_24V_2,OUTPUT);

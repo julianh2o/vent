@@ -5,10 +5,8 @@ double FakeHardware::getSecondsSinceStart() {
   return seconds_since_start;
 }
 
-bool FakeHardware::readSensors(SensorState* state) {
-  if (!read_sensors_return_value) return false;
-  *state = sensor_state;
-  return true;
+const SensorState * FakeHardware::getSensorState() {
+  return &sensor_state;
 }
 
 bool FakeHardware::setValves(const ValveState& state) {
@@ -17,10 +15,8 @@ bool FakeHardware::setValves(const ValveState& state) {
   return true;
 }
 
-bool FakeHardware::readControls(ControlState* state) {
-  if (!read_controls_return_value) return false;
-  *state = control_state;
-  return true;
+const ControlState * FakeHardware::getControlState() {
+  return &control_state;
 }
 
 bool FakeHardware::writeIndication(const IndicationState& state) {
@@ -39,6 +35,10 @@ bool FakeHardware::getConfig(ConfigState* state) {
   if (!get_config_return_value) return false;
   *state = config_state;
   return true;
+}
+
+void FakeHardware::tick() {
+
 }
 
 FakeHardware::FakeHardware() : HardwareInterface() {

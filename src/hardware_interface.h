@@ -48,7 +48,7 @@ struct ControlState {
   // Inspiratory Pressure Knob Value [psi].
   double inspiratory_pressure;
 
-  // RateAssist Switch Value. True if switch is in ON state, 
+  // RateAssist Switch Value. True if switch is in ON state,
   // false if is in OFF state.
   bool rate_assist_switch;
 
@@ -86,7 +86,7 @@ struct IndicationState {
     // Blink GREEN indicates normal operation in Assist Control Mode.
     BLINK_GREEN,
 
-    // Blink YELLOW indicates that Rate Assistance is Disabled, used to 
+    // Blink YELLOW indicates that Rate Assistance is Disabled, used to
     // execute spontaneous breathing trial.
     BLINK_YELLOW
   };
@@ -137,11 +137,11 @@ struct DisplayState {
 
   // Peak Pressure, [psi].
   double plateau_pressure;
- 
+
   // Peep Pressure, [psi].
   double peep_pressure;
 
-  // The flag indicates whether an alert has been triggred or not. 
+  // The flag indicates whether an alert has been triggred or not.
   bool show_alert;
 
   // The alert message that need to be displayed. Here are possible values (this
@@ -156,7 +156,7 @@ struct DisplayState {
   // The string is null terminated.
   char alert_message[128];
 
-  // The flag that indicates that the hint message need to be shown. Hint 
+  // The flag that indicates that the hint message need to be shown. Hint
   // message can occupy part or whole screem. Its purpose is to give guidance,
   // testing direction, etc.
   bool show_hint_message;
@@ -183,12 +183,12 @@ struct ConfigState {
   // Inspiratory Pause Delay. It helps measure plateau pressure, [seconds].
   double inspiratory_pause_delay_seconds;
 
-  // Flow meter threshold to determine the absence of air flow. 
+  // Flow meter threshold to determine the absence of air flow.
   // Small positive value, it could be slightly above ~3*sigma.
   double no_flow_threshold;
 
   // Inhale/exhale volume tolerance (values around ~0.95). The system uses this
-  // to match inhale and exhale volumes which may not match exactly: inhale and 
+  // to match inhale and exhale volumes which may not match exactly: inhale and
   // exhale air have different ratios of oxygen and carbon dioxide.
   double volume_tolerance;
 };
@@ -203,21 +203,19 @@ class HardwareInterface {
  public:
   // Returns number of seconds since unit has started (or since Unix Epoch).
   // IMPORTANT: it is important to provide fractional part as it will be used
-  // for calculus. The implementation is platform dependent. See default 
+  // for calculus. The implementation is platform dependent. See default
   // implementation in hardware_implementation.cpp and make sure to implement it
   // for the target platform.
   virtual double getSecondsSinceStart();
 
-  // Reads sensor values and stores them to the passed state struct. 
-  // Returns true if read succeeded, false otherwise.
-  virtual bool readSensors(SensorState* state)=0;
+  // gets the pointer to the current sensor state
+  virtual const SensorState * getSensorState();
 
-  // Controls valves. Opens or closes valves according to the passed state. 
+  // Controls valves. Opens or closes valves according to the passed state.
   virtual bool setValves(const ValveState& state)=0;
 
-  // Reads control values and stores them to the passed state struct.
-  // Returns true if read succeeded, false otherwise.
-  virtual bool readControls(ControlState* state)=0;
+  // gets the pointer to the current control state
+  virtual const ControlState * getControlState();
 
   // Writes LED and Beeper values.
   virtual bool writeIndication(const IndicationState& state)=0;
@@ -227,6 +225,9 @@ class HardwareInterface {
 
   // Returns the vent configuration which contains thresholds, constants, etc.
   virtual bool getConfig(ConfigState* state)=0;
+
+  // This function needs to be called periodically to perform various hardware functionalities
+  virtual void tick();
 
   HardwareInterface();
   virtual ~HardwareInterface();

@@ -11,12 +11,14 @@ class FakeHardware : public HardwareInterface {
  public:
 
   double getSecondsSinceStart() override;
-  bool readSensors(SensorState* state) override;
+  const SensorState * getSensorState() override;
   bool setValves(const ValveState& state) override;
-  bool readControls(ControlState* state) override;
+  const ControlState * getControlState() override;
   bool writeIndication(const IndicationState& state) override;
   bool updateDisplay(const DisplayState& state) override;
   bool getConfig(ConfigState* state) override;
+
+  void tick();
 
   FakeHardware();
   virtual ~FakeHardware();

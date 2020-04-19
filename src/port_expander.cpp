@@ -31,42 +31,29 @@
 
 #define MCP23017_INT_ERR 255
 
-/**
- * Reads a given register
- */
-uint8_t readRegister(uint8_t addr){
-  // read the current GPINTEN
+uint8_t PortExpander::readRegister(uint8_t addr){
   Wire.beginTransmission(MCP23017_ADDRESS);
-  wiresend(addr);
+  Wire.write(addr);
   Wire.endTransmission();
   Wire.requestFrom(MCP23017_ADDRESS, 1);
-  return wirerecv();
+  return Wire.read();
 }
 
 
-/**
- * Writes a given register
- */
-void writeRegister(uint8_t regAddr, uint8_t regValue){
-  // Write the register
+void PortExpander::writeRegister(uint8_t regAddr, uint8_t regValue){
   Wire.beginTransmission(MCP23017_ADDRESS);
-  wiresend(regAddr);
-  wiresend(regValue);
+  Wire.write(regAddr);
+  Wire.write(regValue);
   Wire.endTransmission();
 }
 
-/**
- * Register address, port dependent, for a given PIN
- */
-uint8_t regForPin(uint8_t pin, uint8_t portAaddr, uint8_t portBaddr){
-  return(pin<8) ?portAaddr:portBaddr;
+//These utility functions abstract port B to pins 8-15
+uint8_t PortExpander::regForPin(uint8_t pin, uint8_t portAaddr, uint8_t portBaddr){
+  return pin < 8 ? portAaddr : portBaddr;
 }
 
-/**
- * Bit number associated to a give Pin
- */
-uint8_t bitForPin(uint8_t pin){
-  return pin%8;
+uint8_t PortExpander::bitForPin(uint8_t pin) {
+  return pin % 8;
 }
 
 /**
@@ -74,7 +61,7 @@ uint8_t bitForPin(uint8_t pin){
  * - Reads the current register value
  * - Writes the new register value
  */
-void updateRegisterBit(uint8_t pin, uint8_t pValue, uint8_t portAaddr, uint8_t portBaddr) {
+void PortExpander::updateRegisterBit(uint8_t pin, uint8_t pValue, uint8_t portAaddr, uint8_t portBaddr) {
   uint8_t regValue;
   uint8_t regAddr=regForPin(pin,portAaddr,portBaddr);
   uint8_t bit=bitForPin(pin);
@@ -86,12 +73,14 @@ void updateRegisterBit(uint8_t pin, uint8_t pValue, uint8_t portAaddr, uint8_t p
   writeRegister(regAddr,regValue);
 }
 
-//////////////////////////////////////////////
-
 void PortExpander::begin() {
   Wire.begin(sda, scl);
   writeRegister(MCP23017_IODIRA, 0xff);
   writeRegister(MCP23017_IODIRB, 0xff);
+
+  pinMode(reset, OUTPUT);
+  digitalWrite(reset, LOW);
+  digitalWrite(reset, HIGH);
 }
 
 void PortExpander::pinMode(uint8_t pin, uint8_t mode) {
@@ -125,7 +114,7 @@ bool PortExpander::digitalRead(uint8_t pin) {
   return bitRead(gpio,bit);
 }
 
-PortExpander::PortExpander(uint8_t port_sda, uint8_t port_scl) : sda(port_sda), scl(port_scl) {
+PortExpander::PortExpander(uint8_t sda, uint8_t scl, uint8_t reset) : sda(sda), scl(scl), reset(reset) {
 }
 
 PortExpander::~PortExpander() {

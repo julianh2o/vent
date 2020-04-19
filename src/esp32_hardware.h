@@ -8,37 +8,45 @@
 #include "screen.h"
 #include "buzzer.h"
 #include "button_debouncer.h"
+#include "flow_sensor.h"
 
 class Esp32Hardware : public HardwareInterface {
 
 public:
   double getSecondsSinceStart() override;
-  bool readSensors(SensorState* state) override;
-  bool setValves(const ValveState& state) override;
 
-  bool readControls(ControlState* state) override;
-  ControlState * getControlState();
+  //Harware Inputs
+  bool readSensors(SensorState* state);
+  const SensorState * getSensorState() override;
+  void updateSensorState();
+
+  bool readControls(ControlState* state);
+  ControlState * getControlState() override;
   void updateControlState();
 
+  //Harware outputs
+  bool setValves(const ValveState& state) override;
   bool writeIndication(const IndicationState& state) override;
   bool updateDisplay(const DisplayState& state) override;
   bool getConfig(ConfigState* state) override;
 
   void begin();
   void runTest();
-  void testModeTick(uint16_t i);
-  void tick(uint16_t i);
+  void testModeTick();
+  void tick() override;
 
   Esp32Hardware();
   virtual ~Esp32Hardware();
 
   bool controlStateUpdated;
   ControlState controlState;
+  SensorState sensorState;
 
   PortExpander ports;
   Multiplexer mux;
   Screen screen;
   Buzzer buzzer;
+  FlowSensor flow1;
 
   ButtonDebouncer start;
   ButtonDebouncer pause;
