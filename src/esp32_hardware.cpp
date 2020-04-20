@@ -1,8 +1,30 @@
 #include "esp32_hardware.h"
 #include "hardware_interface.h"
 
+void Esp32Hardware::restartUptime() {
+  timeval tv;
+  gettimeofday(&tv, NULL);
+  bootTimestamp = tv.tv_sec;
+}
+
 double Esp32Hardware::getSecondsSinceStart() {
-  return 0;
+  //
+  // IMPORTANT
+  // =========
+  //
+  // This implementation was on ESP32 with Arduino IDE with
+  // ARDUINOJSON_USE_DOUBLE set to 1. It also should work with FLOAT as it
+  // debases number of seconds by the timestamp of when the instance of
+  // TimeCounter created. Be aware that FLOAT precision is not enough for
+  // storing number of seconds since Unix Epoch. Be careful when working with
+  // timestamps on embedded platform.
+  //
+  timeval tv;
+  gettimeofday(&tv, NULL);
+  time_t seconds_since_creation_time_t = tv.tv_sec - bootTimestamp;
+  double s = (double)seconds_since_creation_time_t;
+  double ms = (double)(tv.tv_usec / 1000LL);
+  return s + ms / 1000.0;
 }
 
 bool Esp32Hardware::readSensors(SensorState* state) {
@@ -118,6 +140,7 @@ void Esp32Hardware::tick() {
   start.tick(!ports.digitalRead(PORTS_BUTTON1));
   pause.tick(!ports.digitalRead(PORTS_BUTTON2));
   updateControlState();
+  updateSensorState();
 
   testModeTick();
 
@@ -168,6 +191,20 @@ void Esp32Hardware::tick() {
     screen.tft.print(start.isPressed());
     screen.tft.print("    ");
     screen.tft.println();
+
+    screen.tft.print("pressure: ");
+    screen.tft.print(sensorState.p1);
+    screen.tft.print("    ");
+    screen.tft.println();
+
+    screen.tft.print("flow: ");
+    if (sensorState.f1 == -1) {
+      screen.tft.print("ERR");
+    } else {
+      screen.tft.print(sensorState.f1);
+    }
+    screen.tft.print("    ");
+    screen.tft.println();
   }
 }
 
@@ -199,9 +236,13 @@ void Esp32Hardware::begin() {
   ports.pinMode(PORTS_SWITCH1,INPUT);
   ports.pinMode(PORTS_SWITCH2,INPUT);
   ports.pinMode(PORTS_F2_PWR,OUTPUT);
-  ports.pinMode(PORTS_F2_HTR ,OUTPUT);
+  ports.pinMode(PORTS_F2_HTR,OUTPUT);
 
   mux.pinMode(INPUT);
+
+  pinMode(PRESSURE_1,INPUT);
+
+  restartUptime();
 }
 
 Esp32Hardware::~Esp32Hardware() {

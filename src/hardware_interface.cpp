@@ -5,7 +5,3 @@ HardwareInterface::HardwareInterface() {
 
 HardwareInterface::~HardwareInterface() {
 }
-
-double HardwareInterface::getSecondsSinceStart() {
-  return counter_.getSecondsSinceCreation();
-}

@@ -40,7 +40,7 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 	$(MKDIR_P) $(dir $@)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-#g++ -Wall -std=c++11 -O2  -o main fake_hardware_test.o test_suite.o vent_machine_test.o vent_state_test.o ../fake_hardware.o ../hardware_interface.o ../time_counter.o ../vent.o ../vent_machine.o ../vent_state.o  -lpthread
+#g++ -Wall -std=c++11 -O2  -o main fake_hardware_test.o test_suite.o vent_machine_test.o vent_state_test.o ../fake_hardware.o ../hardware_interface.o ../vent.o ../vent_machine.o ../vent_state.o  -lpthread
 
 .PHONY: clean
 

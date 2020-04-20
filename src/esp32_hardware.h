@@ -10,9 +10,13 @@
 #include "button_debouncer.h"
 #include "flow_sensor.h"
 
+#include <unistd.h>
+#include <sys/time.h>
+
 class Esp32Hardware : public HardwareInterface {
 
 public:
+  void restartUptime();
   double getSecondsSinceStart() override;
 
   //Harware Inputs
@@ -50,6 +54,8 @@ public:
 
   ButtonDebouncer start;
   ButtonDebouncer pause;
+
+  time_t bootTimestamp;
 };
 
 #endif  // ESP32_HARDWARE_H

@@ -1,14 +1,10 @@
 #ifndef HARDWARE_INTERFACE_H
 #define HARDWARE_INTERFACE_H
 
-#include "time_counter.h"
-
-
 //
 // Sensor Readings.
 //
 struct SensorState {
-
   // Momentary pressure measurement provided by P1 pressure sensor, [psi].
   double p1;
 
@@ -206,16 +202,16 @@ class HardwareInterface {
   // for calculus. The implementation is platform dependent. See default
   // implementation in hardware_implementation.cpp and make sure to implement it
   // for the target platform.
-  virtual double getSecondsSinceStart();
+  virtual double getSecondsSinceStart()=0;
 
   // gets the pointer to the current sensor state
-  virtual const SensorState * getSensorState();
+  virtual const SensorState * getSensorState()=0;
 
   // Controls valves. Opens or closes valves according to the passed state.
   virtual bool setValves(const ValveState& state)=0;
 
   // gets the pointer to the current control state
-  virtual const ControlState * getControlState();
+  virtual const ControlState * getControlState()=0;
 
   // Writes LED and Beeper values.
   virtual bool writeIndication(const IndicationState& state)=0;
@@ -227,13 +223,10 @@ class HardwareInterface {
   virtual bool getConfig(ConfigState* state)=0;
 
   // This function needs to be called periodically to perform various hardware functionalities
-  virtual void tick();
+  virtual void tick()=0;
 
   HardwareInterface();
   virtual ~HardwareInterface();
-
- private:
-  TimeCounter counter_;
 };
 
 #endif  // HARDWARE_INTERFACE_H
