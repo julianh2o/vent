@@ -42,9 +42,13 @@ public:
   Esp32Hardware();
   virtual ~Esp32Hardware();
 
-  bool controlStateUpdated;
+  bool forceRefresh;
+
   ControlState controlState;
+  ControlState lastControlState;
+
   SensorState sensorState;
+  SensorState lastSensorState;
 
   PortExpander ports;
   Multiplexer mux;
@@ -55,6 +59,9 @@ public:
   ButtonDebouncer start;
   ButtonDebouncer pause;
 
+private:
+  void boxTextTop(uint8_t n);
+  void boxTextBottom(uint8_t n);
   time_t bootTimestamp;
 };
 

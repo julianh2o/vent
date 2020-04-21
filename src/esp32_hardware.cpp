@@ -1,6 +1,12 @@
 #include "esp32_hardware.h"
 #include "hardware_interface.h"
 
+const int width = 320;
+const int boxHeight = 50;
+const int divs = 4;
+const int padding = 3;
+const int boxWidth = ((width-padding) / divs) - padding;
+
 void Esp32Hardware::restartUptime() {
   timeval tv;
   gettimeofday(&tv, NULL);
@@ -31,7 +37,7 @@ bool Esp32Hardware::readSensors(SensorState* state) {
   //pressure
   state->p1 = analogRead(PRESSURE_1);
 
-  //flow
+  // flow
   state->f1 = flow1.read();
 
   return false;
@@ -80,28 +86,11 @@ ControlState * Esp32Hardware::getControlState() {
 }
 
 void Esp32Hardware::updateControlState() {
-  ControlState currentState;
-  readControls(&currentState);
+  start.tick(!ports.digitalRead(PORTS_BUTTON1));
+  pause.tick(!ports.digitalRead(PORTS_BUTTON2));
 
-  if (controlState.target_switch != currentState.target_switch ||
-    controlState.tidal_volume != currentState.tidal_volume ||
-    controlState.inspiratory_pressure != currentState.inspiratory_pressure ||
-    controlState.rate_assist_switch != currentState.rate_assist_switch ||
-    controlState.respiratory_rate != currentState.respiratory_rate ||
-    controlState.inhale_exhale_ratio != currentState.inhale_exhale_ratio ||
-    controlState.end_inspiratory_pause_button_down != currentState.end_inspiratory_pause_button_down ||
-    controlState.start_ack_button_down != currentState.start_ack_button_down) controlStateUpdated = true;
 
-  if (controlStateUpdated) {
-    controlState.target_switch = currentState.target_switch;
-    controlState.tidal_volume = currentState.tidal_volume;
-    controlState.inspiratory_pressure = currentState.inspiratory_pressure;
-    controlState.rate_assist_switch = currentState.rate_assist_switch;
-    controlState.respiratory_rate = currentState.respiratory_rate;
-    controlState.inhale_exhale_ratio = currentState.inhale_exhale_ratio;
-    controlState.end_inspiratory_pause_button_down = currentState.end_inspiratory_pause_button_down;
-    controlState.start_ack_button_down = currentState.start_ack_button_down;
-  }
+  readControls(&controlState);
 }
 
 bool Esp32Hardware::writeIndication(const IndicationState& state) {
@@ -135,69 +124,111 @@ void Esp32Hardware::testModeTick() {
   writeIndication(indicate);
 }
 
+void Esp32Hardware::boxTextTop(uint8_t n) {
+    screen.tft.setCursor(3 + n*(boxWidth + padding),240-boxHeight + 3);
+    screen.tft.setTextSize(1);
+}
+
+void Esp32Hardware::boxTextBottom(uint8_t n) {
+    screen.tft.setCursor(3 + n*(boxWidth + padding),240-boxHeight + 21);
+    screen.tft.setTextSize(3);
+}
+
 void Esp32Hardware::tick() {
   buzzer.tick();
-  start.tick(!ports.digitalRead(PORTS_BUTTON1));
-  pause.tick(!ports.digitalRead(PORTS_BUTTON2));
   updateControlState();
   updateSensorState();
 
-  testModeTick();
+  bool refresh = false;
+  if (forceRefresh || controlState.target_switch != lastControlState.target_switch || controlState.rate_assist_switch != lastControlState.rate_assist_switch) {
+    refresh = true;
+    forceRefresh = false;
+    screen.clear();
+  }
 
-  if (controlStateUpdated) {
-    controlStateUpdated = false;
-    screen.tft.setCursor(0, 0);
-    screen.tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-    screen.tft.setTextSize(2);
+  screen.tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+  screen.tft.setTextSize(2);
 
-    screen.tft.print("mode: ");
-    screen.tft.print(controlState.target_switch == ControlState::PRESSURE ? "Pressure" : "Volume");
-    screen.tft.print("    ");
-    screen.tft.println();
+  //normalizeDial(0,20,mux.analogRead(MUX_DIAL_3),1,true); can use this for testing gfx positioning..
+  uint8_t lineHeight = 18;
 
-    screen.tft.print("tidal_v: ");
-    screen.tft.print(controlState.tidal_volume);
-    screen.tft.print("    ");
-    screen.tft.println();
+  if (controlState.target_switch == ControlState::VOLUME) {
+    if (refresh) {
+      screen.tft.setCursor(0, 0);
+      screen.tft.println("Mode: ACV Target Volume");
+    }
 
-    screen.tft.print("inspir_pressure: ");
-    screen.tft.print(controlState.inspiratory_pressure);
-    screen.tft.print("    ");
-    screen.tft.println();
+    if (refresh || controlState.tidal_volume != lastControlState.tidal_volume) {
+      screen.tft.setCursor(0, lineHeight);
+      screen.tft.print("Target Volume: ");
+      screen.padprint("%.0f cc",controlState.tidal_volume,7);
+      screen.tft.println();
+    }
 
-    screen.tft.println();
+    if (refresh || controlState.inspiratory_pressure != lastControlState.inspiratory_pressure) {
+      screen.tft.setCursor(0, 2*lineHeight);
+      screen.tft.print("Alert Pressure: ");
+      screen.padprint("%.2f cm",controlState.inspiratory_pressure,7);
+      screen.tft.println();
+    }
+  } else {
+    if (refresh) {
+      screen.tft.setCursor(0, 0);
+      screen.tft.println("Mode: ACV Target Pressure");
+    }
 
-    screen.tft.print("rate assist: ");
-    screen.tft.print(controlState.rate_assist_switch ? "ON" : "OFF");
-    screen.tft.print("    ");
-    screen.tft.println();
+    if (refresh || controlState.inspiratory_pressure != lastControlState.inspiratory_pressure) {
+      screen.tft.setCursor(0, lineHeight);
+      screen.tft.print("Target Pressure: ");
+      screen.padprint("%.2f cm",controlState.inspiratory_pressure,7);
+      screen.tft.println();
+    }
 
-    screen.tft.print("resp_rate: ");
-    screen.tft.print(controlState.respiratory_rate);
-    screen.tft.print("    ");
-    screen.tft.println();
+    if (refresh || controlState.tidal_volume != lastControlState.tidal_volume) {
+      screen.tft.setCursor(0, 2*lineHeight);
+      screen.tft.print("Alert Volume: ");
+      screen.padprint("%.0f cc",controlState.tidal_volume,7);
+      screen.tft.println();
+    }
+  }
 
-    screen.tft.print("brth_ratio: ");
-    screen.tft.print(controlState.inhale_exhale_ratio);
-    screen.tft.print("    ");
-    screen.tft.println();
+  if (controlState.rate_assist_switch) {
+    if (refresh || controlState.respiratory_rate != lastControlState.respiratory_rate) {
+      screen.tft.setCursor(0, 3*lineHeight);
+      screen.tft.print("Min resp rate: ");
+      screen.padprint("%.0f bpm",controlState.respiratory_rate,6);
+      screen.tft.println();
+    }
 
-    screen.tft.print("pause_btn: ");
-    screen.tft.print(pause.isPressed());
-    screen.tft.print("    ");
-    screen.tft.println();
+    if (refresh || controlState.inhale_exhale_ratio != lastControlState.inhale_exhale_ratio) {
+      screen.tft.setCursor(0, 4*lineHeight);
+      screen.tft.print("Resp Ratio: 1:");
+      screen.padprint("%.2f",controlState.inhale_exhale_ratio,9);
+      screen.tft.println();
+    }
+  } else {
+    if (refresh) {
+      screen.tft.setCursor(0, 3*lineHeight);
+      screen.tft.println("Rate assist OFF");
+    }
+  }
 
-    screen.tft.print("start_btn: ");
-    screen.tft.print(start.isPressed());
-    screen.tft.print("    ");
-    screen.tft.println();
+  if (refresh) {
+    screen.tft.setCursor(0, 6*lineHeight);
+    screen.tft.println("Measurements: ");
+  }
 
-    screen.tft.print("pressure: ");
+  if (refresh || sensorState.p1 != lastSensorState.p1) {
+    screen.tft.setCursor(0, 6*lineHeight);
+    screen.tft.println("Measurements: ");
+    screen.tft.print("Pressure: ");
     screen.tft.print(sensorState.p1);
     screen.tft.print("    ");
     screen.tft.println();
+  }
 
-    screen.tft.print("flow: ");
+  if (refresh || sensorState.f1 != lastSensorState.f1) {
+    screen.tft.print("Flow: ");
     if (sensorState.f1 == -1) {
       screen.tft.print("ERR");
     } else {
@@ -206,6 +237,62 @@ void Esp32Hardware::tick() {
     screen.tft.print("    ");
     screen.tft.println();
   }
+
+  //width=320, height=240
+  if (refresh) {
+    for (int i=0; i<divs; i++) {
+      screen.tft.fillRect(i*(boxWidth+padding), 240-boxHeight, boxWidth, boxHeight-1, ILI9341_BLACK);
+      screen.tft.drawRect(i*(boxWidth+padding), 240-boxHeight, boxWidth, boxHeight-1, ILI9341_WHITE);
+    }
+  }
+
+  //Tidal volume
+  if (refresh || controlState.tidal_volume != lastControlState.tidal_volume) {
+    boxTextTop(0);
+    screen.tft.print("TVol [cc]");
+    boxTextBottom(0);
+    screen.padprint("%.0f",controlState.tidal_volume,4);
+  }
+
+  //Insp pressure
+  if (refresh || controlState.inspiratory_pressure != lastControlState.inspiratory_pressure) {
+    boxTextTop(1);
+    screen.tft.print("Insp [cm]");
+    boxTextBottom(1);
+    screen.padprint("%.2f",controlState.inspiratory_pressure,4);
+  }
+
+  //Resp rate
+  if (refresh || controlState.respiratory_rate != lastControlState.respiratory_rate) {
+    screen.tft.setTextColor(controlState.rate_assist_switch ? ILI9341_WHITE : ILI9341_DARKGREY, ILI9341_BLACK);
+    boxTextTop(2);
+    screen.tft.print("Rate [bpm]");
+
+    boxTextBottom(2);
+    screen.padprint("%.0f",controlState.respiratory_rate,2);
+  }
+
+  //Inhale/Exhale Ratio
+  if (refresh || controlState.inhale_exhale_ratio != lastControlState.inhale_exhale_ratio) {
+    screen.tft.setTextColor(controlState.rate_assist_switch ? ILI9341_WHITE : ILI9341_DARKGREY, ILI9341_BLACK);
+    boxTextTop(3);
+    screen.tft.print("in/ex ratio");
+
+    boxTextBottom(3);
+    screen.padprint("%.2f",controlState.inhale_exhale_ratio,4);
+  }
+
+  lastControlState.target_switch = controlState.target_switch;
+  lastControlState.tidal_volume = controlState.tidal_volume;
+  lastControlState.inspiratory_pressure = controlState.inspiratory_pressure;
+  lastControlState.rate_assist_switch = controlState.rate_assist_switch;
+  lastControlState.respiratory_rate = controlState.respiratory_rate;
+  lastControlState.inhale_exhale_ratio = controlState.inhale_exhale_ratio;
+  lastControlState.end_inspiratory_pause_button_down = controlState.end_inspiratory_pause_button_down;
+  lastControlState.start_ack_button_down = controlState.start_ack_button_down;
+
+  lastSensorState.p1 = sensorState.p1;
+  lastSensorState.f1 = sensorState.f1;
 }
 
 Esp32Hardware::Esp32Hardware() : HardwareInterface(),
@@ -214,6 +301,8 @@ Esp32Hardware::Esp32Hardware() : HardwareInterface(),
   screen(LCD_CS, LCD_DC, LCD_MOSI, LCD_SCLK, LCD_RST, LCD_MISO),
   buzzer(BUZZER, 0),
   flow1(I2C_1_SDA,I2C_1_SCL) {
+
+  forceRefresh = true;
 }
 
 void Esp32Hardware::begin() {

@@ -35,6 +35,19 @@ void Screen::runTest(void) {
   tft.println("see if I don't!");
 }
 
+void Screen::clear() {
+  tft.fillScreen(ILI9341_BLACK);
+  tft.setCursor(0, 0);
+}
+
+void Screen::padprint(const char * fmt, double n, uint8_t width) {
+  char s[width+1];
+  uint8_t len = sprintf(s,fmt,n);
+  for (int i=len; i<width; i++) s[i] = ' ';
+  s[width] = 0;
+  tft.print(s);
+}
+
 // Screen::Screen(uint8_t cs, uint8_t dc, uint8_t mosi, int8_t sclk, uint8_t rst,  uint8_t miso) : tft(cs, dc, mosi, sclk, rst, miso) {
 Screen::Screen(uint8_t cs, uint8_t dc, uint8_t mosi, int8_t sclk, uint8_t rst,  uint8_t miso) : tft(cs, dc, rst) {
 }

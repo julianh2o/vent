@@ -1,6 +1,7 @@
 #include "port_expander.h"
 #include <Arduino.h>
 #include <Wire.h>
+#include "configuration.h"
 
 #define MCP23017_ADDRESS 0x24
 
@@ -74,13 +75,13 @@ void PortExpander::updateRegisterBit(uint8_t pin, uint8_t pValue, uint8_t portAa
 }
 
 void PortExpander::begin() {
+  ::pinMode(IO_RST, OUTPUT);
+  ::digitalWrite(IO_RST, LOW);
+  ::digitalWrite(IO_RST, HIGH);
+
   Wire.begin(sda, scl);
   writeRegister(MCP23017_IODIRA, 0xff);
   writeRegister(MCP23017_IODIRB, 0xff);
-
-  pinMode(reset, OUTPUT);
-  digitalWrite(reset, LOW);
-  digitalWrite(reset, HIGH);
 }
 
 void PortExpander::pinMode(uint8_t pin, uint8_t mode) {

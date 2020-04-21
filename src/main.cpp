@@ -14,13 +14,12 @@ Esp32Hardware h;
 void setup() {
   Serial.begin(115200);
 
-  Serial.println("Setup begin");
-
   h.begin();
 }
 
 void tick() {
   h.tick();
+  h.testModeTick(); //Sets the indicator based on switch, beeps when buttons are pushed for demoing
 }
 
 void loop() {

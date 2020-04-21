@@ -16,6 +16,9 @@ public:
 
   void runTest();
 
+  void clear();
+  void padprint(const char * fmt, double n, uint8_t width);
+
   Adafruit_ILI9341 tft;
 };
 
