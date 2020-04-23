@@ -7,7 +7,7 @@
 class FlowSensor {
 
 public:
-  FlowSensor(uint8_t sda, uint8_t scl);
+  FlowSensor();
   virtual ~FlowSensor();
 
 
@@ -19,9 +19,6 @@ public:
 
 
 private:
-  uint8_t sda;
-  uint8_t scl;
-
   uint8_t crc8(const uint8_t data, uint8_t crc);
 };
 

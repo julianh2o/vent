@@ -2,27 +2,44 @@
 #define BUZZER_H
 
 #include <Arduino.h>
+#include "hardware_interface.h"
+
+
+class DottedBeeper {
+ public:
+  DottedBeeper(uint64_t beep_ms, uint64_t mute_ms);
+  ~DottedBeeper();
+
+  void start();
+  void stop();
+  void tick();
+
+ private:
+  uint64_t beep_ms_;
+  uint64_t mute_ms_;
+  bool buzzer_on_;
+  bool sound_on_;
+  uint64_t beep_end_ms_;
+  uint64_t mute_end_ms_;
+};
+
 
 class Buzzer {
 
 public:
-  Buzzer(uint8_t pin, uint8_t channel);
-  virtual ~Buzzer();
+  Buzzer();
+  ~Buzzer();
 
   void begin();
-
-  void beep(uint16_t length);
-  void shortBeep();
-  void longBeep();
-
+  void setState(IndicationState::BeeperMode state);
   void tick();
 
 private:
-  uint8_t pin;
-  uint8_t channel;
+  IndicationState::BeeperMode state_;
 
-  //0 means we're not beeping, anything else means we should keep beeping until then
-  unsigned long beepUntil;
+  DottedBeeper short_beeps_;
+  DottedBeeper long_beeps_;
+
 };
 
 #endif  // BUZZER_H

@@ -8,21 +8,17 @@
 #include "button_debouncer.h"
 #include "buzzer.h"
 #include "flow_sensor.h"
+#include "vent.h"
 
-Esp32Hardware h;
+Esp32Hardware hardware;
+Vent vent(&hardware);
 
 void setup() {
   Serial.begin(115200);
-
-  h.begin();
-}
-
-void tick() {
-  h.tick();
-  h.testModeTick(); //Sets the indicator based on switch, beeps when buttons are pushed for demoing
+  hardware.begin();
 }
 
 void loop() {
-  tick();
+  vent.tick();
   delay(20);
 }

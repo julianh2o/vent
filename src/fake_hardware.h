@@ -16,7 +16,7 @@ class FakeHardware : public HardwareInterface {
   const ControlState * getControlState() override;
   bool writeIndication(const IndicationState& state) override;
   bool updateDisplay(const DisplayState& state) override;
-  bool getConfig(ConfigState* state) override;
+  bool getConfig(ConfigState* state);
 
   void tick();
 

@@ -77,7 +77,7 @@
 #define PRESSURE_3 34
 #define PRESSURE_4 35
 
-#define BUZZER 32
+#define BUZZER_PIN 32
 
 #define IO_RST 2
 

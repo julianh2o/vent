@@ -12,7 +12,7 @@ class VentMachine {
  public:
   // Creates new state and registers it within the state machine.
   // No effect on current state.
-  VentState& addState(int state_id, StatePayload payload);
+  VentState& addState(int state_id, StatePayload payload = &dummy);
 
   // Changes current state of the machine by state id. If corresponding state
   // not found no change happen. If corresponding state found its payload will
@@ -32,6 +32,8 @@ class VentMachine {
  private:
   std::map<int, VentState> states_;
   int current_state_id_;
+
+  static void dummy() {}
 };
 
 #endif  // VENT_MACHINE_H

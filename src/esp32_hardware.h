@@ -5,7 +5,7 @@
 #include "port_expander.h"
 #include "multiplexer.h"
 #include "configuration.h"
-#include "screen.h"
+
 #include "buzzer.h"
 #include "button_debouncer.h"
 #include "flow_sensor.h"
@@ -19,7 +19,7 @@ public:
   void restartUptime();
   double getSecondsSinceStart() override;
 
-  //Harware Inputs
+  // Harware Inputs.
   bool readSensors(SensorState* state);
   const SensorState * getSensorState() override;
   void updateSensorState();
@@ -28,11 +28,11 @@ public:
   ControlState * getControlState() override;
   void updateControlState();
 
-  //Harware outputs
+  // Harware Outputs.
   bool setValves(const ValveState& state) override;
   bool writeIndication(const IndicationState& state) override;
   bool updateDisplay(const DisplayState& state) override;
-  bool getConfig(ConfigState* state) override;
+  const ConfigState* getConfig() override;
 
   void begin();
   void runTest();
@@ -52,12 +52,13 @@ public:
 
   PortExpander ports;
   Multiplexer mux;
-  Screen screen;
   Buzzer buzzer;
   FlowSensor flow1;
 
   ButtonDebouncer start;
   ButtonDebouncer pause;
+
+  ConfigState configState;
 
 private:
   void boxTextTop(uint8_t n);

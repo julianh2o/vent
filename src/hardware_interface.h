@@ -70,21 +70,19 @@ struct IndicationState {
   // LED is expected to work in four modes:
   enum StatusLedMode {
 
-    // Solid RED indicates malfunction mode.
-    SOLID_RED,
-
     // Solid GREEN indicates Ready/Standby state.
     SOLID_GREEN,
 
+    // Solid RED indicates malfunction mode.
+    SOLID_RED,
+
+
+
     // Blink RED indicates triggered alert.
-    BLINK_RED,
+    //BLINK_RED,
 
     // Blink GREEN indicates normal operation in Assist Control Mode.
-    BLINK_GREEN,
-
-    // Blink YELLOW indicates that Rate Assistance is Disabled, used to
-    // execute spontaneous breathing trial.
-    BLINK_YELLOW
+    //BLINK_GREEN
   };
 
   // Status LED mode.
@@ -93,7 +91,8 @@ struct IndicationState {
   // Beeper is supposed to support async alerting mode.
   enum BeeperMode {
     OFF,
-    ALERT
+    SHORT_BEEPS,
+    LONG_BEEPS
   };
 
   // Beeper mode.
@@ -168,14 +167,23 @@ struct DisplayState {
 //
 struct ConfigState {
   // Inhale Pressure Threshold. It helps detect spontaneous breathing effort.
-  double inhale_pressure_threshold;
+  double p_in;
 
   // Exhale Pressure Threshold. It helps detect spontaneous breathing effort.
-  double exhale_pressure_threshold;
+  double p_ex;
 
-  // Cough Pressure Threshold. It helps detect patient cough.
-  double cough_pressure_threshold;
+  // Target expiration length [seconds].
+  double t_tex;
 
+  // A flow meter threshold to determine absence of air flow, small positive value (~3σ);
+  double f_stop;
+
+
+
+
+
+
+  
   // Inspiratory Pause Delay. It helps measure plateau pressure, [seconds].
   double inspiratory_pause_delay_seconds;
 
@@ -210,8 +218,16 @@ class HardwareInterface {
   // Controls valves. Opens or closes valves according to the passed state.
   virtual bool setValves(const ValveState& state)=0;
 
+  // TODO: Change interface to the following:
+  bool setValves(bool v1, bool v2) {
+    ValveState state;
+    state.v1 = v1;
+    state.v2 = v2;
+    this->setValves(state);
+  }
+
   // gets the pointer to the current control state
-  virtual const ControlState * getControlState()=0;
+  virtual const ControlState* getControlState()=0;
 
   // Writes LED and Beeper values.
   virtual bool writeIndication(const IndicationState& state)=0;
@@ -220,9 +236,12 @@ class HardwareInterface {
   virtual bool updateDisplay(const DisplayState& state)=0;
 
   // Returns the vent configuration which contains thresholds, constants, etc.
-  virtual bool getConfig(ConfigState* state)=0;
 
-  // This function needs to be called periodically to perform various hardware functionalities
+  // TODO: return pointer to ConfigState instead of bool.
+  virtual const ConfigState* getConfig()=0;
+
+  // This function needs to be called periodically to perform various hardware
+  // functionalities.
   virtual void tick()=0;
 
   HardwareInterface();

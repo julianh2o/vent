@@ -8,9 +8,8 @@
 
 class Screen {
 
-public:
-  Screen(uint8_t cs, uint8_t dc, uint8_t mosi, int8_t sclk, uint8_t rst,  uint8_t miso);
-  virtual ~Screen();
+ public:
+  static Screen* getInstance();
 
   void begin();
 
@@ -20,6 +19,11 @@ public:
   void padprint(const char * fmt, double n, uint8_t width);
 
   Adafruit_ILI9341 tft;
+
+ private:
+  Screen();
+  Screen(Screen&);
+  ~Screen();
 };
 
 #endif //SCREEN_H

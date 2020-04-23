@@ -1,7 +1,17 @@
 #include "screen.h"
+
+#include "configuration.h"
+
 #include "SPI.h"
 #include "Adafruit_GFX.h"
 #include "Adafruit_ILI9341.h"
+
+
+Screen* Screen::getInstance() {
+  static Screen instance;
+  return &instance;
+}
+
 
 void Screen::begin() {
   tft.begin(20/*MHZ*/*1000000);
@@ -48,8 +58,10 @@ void Screen::padprint(const char * fmt, double n, uint8_t width) {
   tft.print(s);
 }
 
-// Screen::Screen(uint8_t cs, uint8_t dc, uint8_t mosi, int8_t sclk, uint8_t rst,  uint8_t miso) : tft(cs, dc, mosi, sclk, rst, miso) {
-Screen::Screen(uint8_t cs, uint8_t dc, uint8_t mosi, int8_t sclk, uint8_t rst,  uint8_t miso) : tft(cs, dc, rst) {
+Screen::Screen() : tft(LCD_CS, LCD_DC, LCD_RST) {
+}
+
+Screen::Screen(Screen&) : tft(LCD_CS, LCD_DC, LCD_RST) {
 }
 
 Screen::~Screen() {
