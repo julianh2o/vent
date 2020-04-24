@@ -183,7 +183,7 @@ struct ConfigState {
 
 
 
-  
+
   // Inspiratory Pause Delay. It helps measure plateau pressure, [seconds].
   double inspiratory_pause_delay_seconds;
 
@@ -216,15 +216,7 @@ class HardwareInterface {
   virtual const SensorState * getSensorState()=0;
 
   // Controls valves. Opens or closes valves according to the passed state.
-  virtual bool setValves(const ValveState& state)=0;
-
-  // TODO: Change interface to the following:
-  bool setValves(bool v1, bool v2) {
-    ValveState state;
-    state.v1 = v1;
-    state.v2 = v2;
-    this->setValves(state);
-  }
+  virtual bool setValves(bool v1, bool v2)=0;
 
   // gets the pointer to the current control state
   virtual const ControlState* getControlState()=0;

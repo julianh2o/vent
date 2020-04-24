@@ -12,7 +12,7 @@ class FakeHardware : public HardwareInterface {
 
   double getSecondsSinceStart() override;
   const SensorState * getSensorState() override;
-  bool setValves(const ValveState& state) override;
+  bool setValves(bool v1, bool v2) override;
   const ControlState * getControlState() override;
   bool writeIndication(const IndicationState& state) override;
   bool updateDisplay(const DisplayState& state) override;

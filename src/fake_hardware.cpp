@@ -9,9 +9,10 @@ const SensorState * FakeHardware::getSensorState() {
   return &sensor_state;
 }
 
-bool FakeHardware::setValves(const ValveState& state) {
+bool FakeHardware::setValves(bool v1, bool v2) {
   if (!set_valves_return_value) return false;
-  valve_state = state;
+  valve_state.v1 = v1;
+  valve_state.v2 = v2;
   return true;
 }
 

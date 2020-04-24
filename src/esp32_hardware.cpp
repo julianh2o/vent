@@ -53,8 +53,10 @@ void Esp32Hardware::updateSensorState() {
   readSensors(&sensorState);
 }
 
-bool Esp32Hardware::setValves(const ValveState& state) {
-  return false;
+bool Esp32Hardware::setValves(bool v1, bool v2) {
+  ports.digitalWrite(PORTS_24V_1,v1);
+  ports.digitalWrite(PORTS_24V_2,v2);
+  return true;
 }
 
 //Perform a simple linear scale for our dials

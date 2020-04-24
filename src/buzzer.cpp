@@ -1,10 +1,7 @@
 #include "buzzer.h"
 
-#include "configuration.h"
-
 #define BUZZER_FREQ1 (uint16_t)2000
 #define BUZZER_RESOLUTION 8
-#define BUZZER_CHANNEL 0
 
 #define SHORT_BEEP_MS 200
 #define SHORT_MUTE_MS 200
@@ -12,28 +9,27 @@
 #define LONG_BEEP_MS 1000
 #define LONG_MUTE_MS 2000
 
-
-
-DottedBeeper::DottedBeeper(uint64_t beep_ms, uint64_t mute_ms) : 
-  beep_ms_(beep_ms), mute_ms_(mute_ms), 
-  beep_end_ms_(0), mute_end_ms_(0), buzzer_on_(false) {}
+DottedBeeper::DottedBeeper(uint8_t channel, uint64_t beep_ms, uint64_t mute_ms) :
+  channel(channel),
+  beep_ms_(beep_ms), mute_ms_(mute_ms),
+  beep_end_ms_(0), mute_end_ms_(0), buzzer_on_(false), sound_on_(false) {}
 
 DottedBeeper::~DottedBeeper() {}
 
 void DottedBeeper::start() {
   buzzer_on_ = true;
-
   sound_on_ = true;
+
   beep_end_ms_ = millis() + beep_ms_;
 
-  ledcSetup(BUZZER_CHANNEL, BUZZER_FREQ1, BUZZER_RESOLUTION);
-  ledcWrite(BUZZER_CHANNEL, 125);
+  ledcSetup(channel, BUZZER_FREQ1, BUZZER_RESOLUTION);
+  ledcWrite(channel, 125);
 }
 
 void DottedBeeper::stop() {
   buzzer_on_ = false;
   sound_on_ = false;
-  ledcWrite(BUZZER_CHANNEL, 0);
+  ledcWrite(channel, 0);
 }
 
 void DottedBeeper::tick() {
@@ -41,29 +37,30 @@ void DottedBeeper::tick() {
   if (sound_on_) {
     if (millis() > beep_end_ms_) {
       sound_on_ = false;
-      ledcWrite(BUZZER_CHANNEL, 0);
+      ledcWrite(channel, 0);
       mute_end_ms_ = millis() + mute_ms_;
     }
   } else {
     if (millis() > mute_end_ms_) {
       sound_on_ = true;
-      ledcWrite(BUZZER_CHANNEL, 125);
+      ledcWrite(channel, 125);
       beep_end_ms_ = millis() + beep_ms_;
     }
   }
 }
 
-Buzzer::Buzzer() : 
+Buzzer::Buzzer(uint8_t pin, uint8_t channel) :
+  pin(pin), channel(channel),
   state_(IndicationState::OFF),
-  short_beeps_(SHORT_BEEP_MS, SHORT_MUTE_MS),
-  long_beeps_(LONG_BEEP_MS, LONG_MUTE_MS) {
+  short_beeps_(channel,SHORT_BEEP_MS, SHORT_MUTE_MS),
+  long_beeps_(channel,LONG_BEEP_MS, LONG_MUTE_MS) {
 }
 
 Buzzer::~Buzzer() {}
 
 void Buzzer::begin() {
-  pinMode(BUZZER_PIN, OUTPUT);
-  ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);
+  pinMode(pin, OUTPUT);
+  ledcAttachPin(pin, channel);
 }
 
 void Buzzer::tick() {

@@ -29,7 +29,7 @@ public:
   void updateControlState();
 
   // Harware Outputs.
-  bool setValves(const ValveState& state) override;
+  bool setValves(bool v1, bool v2) override;
   bool writeIndication(const IndicationState& state) override;
   bool updateDisplay(const DisplayState& state) override;
   const ConfigState* getConfig() override;
