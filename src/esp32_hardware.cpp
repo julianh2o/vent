@@ -311,7 +311,7 @@ void Esp32Hardware::tick() {
 Esp32Hardware::Esp32Hardware() : HardwareInterface(),
   ports(I2C_1_SDA,I2C_1_SCL,IO_RST),
   mux(MUX0,MUX1,MUX2,MUXIO),
-  buzzer(),
+  buzzer(BUZZER_PIN,0),
   flow1() {
 
   forceRefresh = true;
