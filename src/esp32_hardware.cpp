@@ -417,6 +417,9 @@ void Esp32Hardware::begin() {
 
   // TODO: clean up this mess:
   // IMPORTANT: To make flow sensor work these outputs have to be set to 1.
+  ports.digitalWrite(PORTS_F1_PWR, 0);
+  ports.digitalWrite(PORTS_F1_HTR, 0);
+  delay(200);
   ports.digitalWrite(PORTS_F1_PWR, 1);
   ports.digitalWrite(PORTS_F1_HTR, 1);
 
