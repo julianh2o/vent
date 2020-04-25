@@ -107,7 +107,7 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
   //
   // Cough state.
   //
-  machine_.addState(COUGH_STATE, []() {
+  machine_.addState(COUGH_STATE, [&]() {
     hardware_.setValves(false, true);
   }).addExit(INSPIRATION_BEGIN_STATE, [&]() {
     return ((hardware_.getSecondsSinceStart() - deltaT_) > 5.0);
