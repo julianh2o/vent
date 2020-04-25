@@ -11,7 +11,8 @@
 #include "vent.h"
 
 //If true, we dont run the state machine, we just test the hardware
-#define HARDWARE_TEST true
+#define HARDWARE_TEST false
+
 
 Esp32Hardware hardware;
 Vent vent(&hardware);

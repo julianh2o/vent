@@ -41,7 +41,7 @@ double Esp32Hardware::getSecondsSinceStart() {
 
 bool Esp32Hardware::readSensors(SensorState* state) {
   //pressure
-  state->P = 4095.0 - analogRead(PRESSURE_1);
+  state->P = analogRead(PRESSURE_1);
 
   // flow
   state->F = flow1.read();
