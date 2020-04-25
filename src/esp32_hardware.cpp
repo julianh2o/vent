@@ -169,18 +169,20 @@ void Esp32Hardware::testModeTick() {
   }
 
   //Manually control the valve
-  if (pause.isPressed()) {
-    setValves(controlState.rate_assist_switch,!controlState.rate_assist_switch);
-  } else {
-    setValves(false,false);
-  }
+  // if (pause.isPressed()) {
+  //   setValves(controlState.rate_assist_switch,!controlState.rate_assist_switch);
+  // } else {
+  //   setValves(false,false);
+  // }
 
-  if (controlState.rate_assist_switch) {
-    ports.digitalWrite(PORTS_F1_PWR, 0);
-    ports.digitalWrite(PORTS_F1_HTR, 0);
+  if (pause.isPressed()) {
+    ports.digitalWrite(PORTS_F1_PWR, controlState.rate_assist_switch);
+    ports.digitalWrite(PORTS_F1_HTR, controlState.rate_assist_switch);
+    delay(500);
   } else {
-    ports.digitalWrite(PORTS_F1_PWR, 1);
-    ports.digitalWrite(PORTS_F1_HTR, 1);
+    ports.digitalWrite(PORTS_F1_PWR, !controlState.rate_assist_switch);
+    ports.digitalWrite(PORTS_F1_HTR, !controlState.rate_assist_switch);
+    delay(500);
   }
 }
 
