@@ -50,9 +50,7 @@ bool Esp32Hardware::readSensors(SensorState* state) {
   state->P = ((float)pressureMax * (-offset + (analogRead(PRESSURE_1)/4095.0))) / 10.0;
 
   // flow
-  //flow [slm] = (measured value - offset flow ) / scale factor flow
-  // https://www.sensirion.com/fileadmin/user_upload/customers/sensirion/Dokumente/5_Mass_Flow_Meters/Datasheets/Sensirion_Mass_Flow_Meters_SFM3300_Datasheet.pdf
-  state->F = (flow1.read() - 32768.0) / 120.0;
+  state->F = flow1.read();
 
   return false;
 }
@@ -205,7 +203,7 @@ void Esp32Hardware::tick() {
   screen->tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
   screen->tft.setTextSize(2);
 
-  uint8_t temp = normalizeDial(0,300,mux.analogRead(MUX_DIAL_3),1,true); //can use this for testing gfx positioning..
+  // uint8_t temp = normalizeDial(0,300,mux.analogRead(MUX_DIAL_3),1,true); //can use this for testing gfx positioning..
   uint8_t lineHeight = 18;
 
   if (controlState.target_switch == ControlState::VOLUME) {
@@ -213,7 +211,7 @@ void Esp32Hardware::tick() {
       screen->tft.setCursor(0, 0);
       screen->tft.print("Mode: ACV Target Volume");
       //DEBUGGING
-      screen->tft.print(temp);
+      // screen->tft.print(temp);
     }
 
     if (refresh || controlState.Vt != lastControlState.Vt) {
@@ -285,12 +283,13 @@ void Esp32Hardware::tick() {
   if (refresh) {
     for (int i=0; i<divs; i++) {
       screen->tft.fillRect(0, 240 - (boxHeight * (3-i)), boxWidth, boxHeight-1, ILI9341_BLACK);
-      screen->tft.drawRect(0, 240 - (boxHeight * (3-i)), boxWidth, boxHeight-1, ILI9341_WHITE);
+      screen->tft.drawRect(0, 240 - (boxHeight * (3-i)), boxWidth, boxHeight-1, ILI9341_CYAN);
     }
   }
 
   if (refresh || sensorState.P != lastSensorState.P) {
     boxTextTop(0,0);
+    screen->tft.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
     screen->tft.print("Press [cc]");
     boxTextBottom(0,0);
     screen->padprint("%.1f",sensorState.P,4);
@@ -298,6 +297,7 @@ void Esp32Hardware::tick() {
 
   if (refresh || sensorState.F != lastSensorState.F) {
     boxTextTop(0,1);
+    screen->tft.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
     screen->tft.print("Flow [cm]");
     boxTextBottom(0,1);
     if (sensorState.F == -1) {
