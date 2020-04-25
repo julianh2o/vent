@@ -150,8 +150,19 @@ void Esp32Hardware::runTest() {
 
 //This contains testing/demo behavior that is not critical to operation
 void Esp32Hardware::testModeTick() {
-  if (start.hasPressed()) displayAlert("Simulated alert");
-  if (pause.hasPressed()) standbyMode();
+  if (start.hasPressed()) {
+    if (showMessage) {
+      standbyMode();
+    } else {
+      displayAlert("Simulated alert");
+    }
+  }
+
+  if (pause.isPressed()) {
+    setValves(controlState.rate_assist_switch,!controlState.rate_assist_switch);
+  } else {
+    setValves(false,false);
+  }
 }
 
 void Esp32Hardware::boxTextTop(uint8_t n) {
@@ -172,7 +183,7 @@ void Esp32Hardware::tick() {
   updateSensorState();
 
   bool refresh = false;
-  if (forceRefresh || controlState.target_switch != lastControlState.target_switch || controlState.rate_assist_switch != lastControlState.rate_assist_switch) {
+  if (pause.isPressed() || start.isPressed() || forceRefresh || controlState.target_switch != lastControlState.target_switch || controlState.rate_assist_switch != lastControlState.rate_assist_switch) {
     refresh = true;
     forceRefresh = false;
     screen->clear();
@@ -181,27 +192,28 @@ void Esp32Hardware::tick() {
   screen->tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
   screen->tft.setTextSize(2);
 
-  //normalizeDial(0,20,mux.analogRead(MUX_DIAL_3),1,true); can use this for testing gfx positioning..
+  uint8_t temp = normalizeDial(0,300,mux.analogRead(MUX_DIAL_3),1,true); //can use this for testing gfx positioning..
   uint8_t lineHeight = 18;
 
   if (controlState.target_switch == ControlState::VOLUME) {
     if (refresh) {
       screen->tft.setCursor(0, 0);
-      screen->tft.println("Mode: ACV Target Volume");
+      screen->tft.print("Mode: ACV Target Volume");
+      screen->tft.print(temp);
     }
 
     if (refresh || controlState.Vt != lastControlState.Vt) {
       screen->tft.setCursor(0, lineHeight);
       screen->tft.print("Target Volume: ");
+      screen->tft.setCursor(225, lineHeight);
       screen->padprint("%.0f cc",controlState.Vt,7);
-      screen->tft.println();
     }
 
     if (refresh || controlState.Pt != lastControlState.Pt) {
       screen->tft.setCursor(0, 2*lineHeight);
       screen->tft.print("Alert Pressure: ");
+      screen->tft.setCursor(225, lineHeight);
       screen->padprint("%.2f cm",controlState.Pt,7);
-      screen->tft.println();
     }
   } else {
     if (refresh) {
