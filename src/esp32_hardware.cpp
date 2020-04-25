@@ -175,7 +175,7 @@ void Esp32Hardware::testModeTick() {
   //   setValves(false,false);
   // }
 
-  if (pause.isPressed()) {
+  if (pause.hasPressed()) {
     ports.digitalWrite(PORTS_F1_PWR, controlState.rate_assist_switch);
     ports.digitalWrite(PORTS_F1_HTR, controlState.rate_assist_switch);
     delay(500);
