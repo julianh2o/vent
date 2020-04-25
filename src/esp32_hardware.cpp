@@ -179,10 +179,6 @@ void Esp32Hardware::testModeTick() {
     ports.digitalWrite(PORTS_F1_PWR, controlState.rate_assist_switch);
     ports.digitalWrite(PORTS_F1_HTR, controlState.rate_assist_switch);
     delay(500);
-  } else {
-    ports.digitalWrite(PORTS_F1_PWR, !controlState.rate_assist_switch);
-    ports.digitalWrite(PORTS_F1_HTR, !controlState.rate_assist_switch);
-    delay(500);
   }
 }
 
