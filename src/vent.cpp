@@ -93,7 +93,7 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
   }).addExit(EXPIRATION_BEGIN_STATE, [&]() {
     return ((hardware_.getSecondsSinceStart() - deltaT_) > 1.0);
   }).addExit(COUGH_STATE, [&]() {
-    return s.P > 4000;
+    return s->P > 4000;
   });
 
   machine_.addState(EXPIRATION_BEGIN_STATE, [&]() {
@@ -108,7 +108,8 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
   // Cough state.
   //
   machine_.addState(COUGH_STATE, []() {
-  }).addExit(INSPIRATION_BEGIN_STATE, []() {
+    hardware_.setValves(false, true);
+  }).addExit(INSPIRATION_BEGIN_STATE, [&]() {
     return ((hardware_.getSecondsSinceStart() - deltaT_) > 5.0);
   });
 
