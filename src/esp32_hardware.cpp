@@ -261,8 +261,9 @@ void Esp32Hardware::tick() {
 
     if (refresh || controlState.Rie != lastControlState.Rie) {
       screen->tft.setCursor(0, 4*lineHeight);
-      screen->tft.print("Resp Ratio: 1:");
+      screen->tft.print("Resp Ratio:");
       screen->tft.setCursor(columnTwo, 4*lineHeight);
+      screen->tft.print("1:");
       screen->padprint("%.2f",controlState.Rie,9);
       screen->tft.println();
     }
@@ -280,14 +281,14 @@ void Esp32Hardware::tick() {
     }
   }
 
-  if (refresh || sensorState.P != sensorState.P) {
+  if (refresh || sensorState.P != lastSensorState.P) {
     boxTextTop(0,0);
     screen->tft.print("Press [cc]");
     boxTextBottom(0,0);
     screen->padprint("%.0f",sensorState.P,4);
   }
 
-  if (refresh || sensorState.F != sensorState.F) {
+  if (refresh || sensorState.F != lastSensorState.F) {
     boxTextTop(0,1);
     screen->tft.print("Flow [cm]");
     boxTextBottom(0,1);
