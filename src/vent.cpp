@@ -81,8 +81,7 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
   machine_.addState(STANDBY_STATE, [&]() {
     hardware_.standbyMode();
   }).addExit(INSPIRATION_BEGIN_STATE, [&]() {
-    return (((hardware_.getSecondsSinceStart() - deltaT_) > 1.5) && 
-      c->start_ack_button_down);
+    return c->start_ack_button_down;
   });
 
   //
