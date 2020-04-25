@@ -15,6 +15,9 @@
 
 #define MESSAGE_SIZE 150
 
+#define HISTORY_SIZE 100
+#define HISTORY_INTERVAL 1000
+
 class Esp32Hardware : public HardwareInterface {
 
 public:
@@ -61,6 +64,8 @@ public:
   SensorState sensorState;
   SensorState lastSensorState;
 
+  SensorState sensorHistory[HISTORY_SIZE];
+
   ConfigState configState;
 
   Statistics statistics;
@@ -75,13 +80,15 @@ public:
 
 
 private:
-  void boxTextTop(uint8_t n);
-  void boxTextBottom(uint8_t n);
+  void boxTextTop(uint8_t x, uint8_t y);
+  void boxTextBottom(uint8_t x, uint8_t y);
   time_t bootTimestamp;
 
   bool showMessage;
   uint16_t messageColor;
   char message [MESSAGE_SIZE];
+
+  unsigned long lastHistoryRecord;
 };
 
 #endif  // ESP32_HARDWARE_H

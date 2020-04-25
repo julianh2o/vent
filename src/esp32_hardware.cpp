@@ -8,6 +8,10 @@ const int boxHeight = 50;
 const int divs = 4;
 const int padding = 3;
 const int boxWidth = ((width-padding) / divs) - padding;
+const int columnTwo = 225;
+const uint8_t boxOriginX = 0;
+const uint8_t boxOriginY = 240 - boxHeight * 3;
+const uint8_t boxPadding = 3;
 
 void Esp32Hardware::restartUptime() {
   timeval tv;
@@ -158,6 +162,7 @@ void Esp32Hardware::testModeTick() {
     }
   }
 
+  //Manually control the valve
   if (pause.isPressed()) {
     setValves(controlState.rate_assist_switch,!controlState.rate_assist_switch);
   } else {
@@ -165,13 +170,13 @@ void Esp32Hardware::testModeTick() {
   }
 }
 
-void Esp32Hardware::boxTextTop(uint8_t n) {
-    Screen::getInstance()->tft.setCursor(3 + n*(boxWidth + padding),240-boxHeight + 3);
+void Esp32Hardware::boxTextTop(uint8_t x, uint8_t y) {
+    Screen::getInstance()->tft.setCursor(boxOriginX + boxPadding + x*(boxWidth + padding),boxOriginY + boxHeight * y + 3);
     Screen::getInstance()->tft.setTextSize(1);
 }
 
-void Esp32Hardware::boxTextBottom(uint8_t n) {
-    Screen::getInstance()->tft.setCursor(3 + n*(boxWidth + padding),240-boxHeight + 21);
+void Esp32Hardware::boxTextBottom(uint8_t x, uint8_t y) {
+    Screen::getInstance()->tft.setCursor(boxOriginX + boxPadding + x*(boxWidth + padding),boxOriginY + boxHeight * y + padding + 18);
     Screen::getInstance()->tft.setTextSize(3);
 }
 
@@ -183,7 +188,7 @@ void Esp32Hardware::tick() {
   updateSensorState();
 
   bool refresh = false;
-  if (pause.isPressed() || start.isPressed() || forceRefresh || controlState.target_switch != lastControlState.target_switch || controlState.rate_assist_switch != lastControlState.rate_assist_switch) {
+  if (forceRefresh || controlState.target_switch != lastControlState.target_switch || controlState.rate_assist_switch != lastControlState.rate_assist_switch) {
     refresh = true;
     forceRefresh = false;
     screen->clear();
@@ -199,20 +204,23 @@ void Esp32Hardware::tick() {
     if (refresh) {
       screen->tft.setCursor(0, 0);
       screen->tft.print("Mode: ACV Target Volume");
+      //DEBUGGING
       screen->tft.print(temp);
     }
 
     if (refresh || controlState.Vt != lastControlState.Vt) {
       screen->tft.setCursor(0, lineHeight);
+      screen->tft.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
       screen->tft.print("Target Volume: ");
-      screen->tft.setCursor(225, lineHeight);
+      screen->tft.setCursor(columnTwo, lineHeight);
       screen->padprint("%.0f cc",controlState.Vt,7);
     }
 
     if (refresh || controlState.Pt != lastControlState.Pt) {
       screen->tft.setCursor(0, 2*lineHeight);
+      screen->tft.setTextColor(ILI9341_RED, ILI9341_BLACK);
       screen->tft.print("Alert Pressure: ");
-      screen->tft.setCursor(225, lineHeight);
+      screen->tft.setCursor(columnTwo, 2*lineHeight);
       screen->padprint("%.2f cm",controlState.Pt,7);
     }
   } else {
@@ -223,23 +231,30 @@ void Esp32Hardware::tick() {
 
     if (refresh || controlState.Pt != lastControlState.Pt) {
       screen->tft.setCursor(0, lineHeight);
+      screen->tft.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
       screen->tft.print("Target Pressure: ");
+      screen->tft.setCursor(columnTwo, lineHeight);
       screen->padprint("%.2f cm",controlState.Pt,7);
       screen->tft.println();
     }
 
     if (refresh || controlState.Vt != lastControlState.Vt) {
       screen->tft.setCursor(0, 2*lineHeight);
+      screen->tft.setTextColor(ILI9341_RED, ILI9341_BLACK);
       screen->tft.print("Alert Volume: ");
+      screen->tft.setCursor(columnTwo, 2*lineHeight);
       screen->padprint("%.0f cc",controlState.Vt,7);
       screen->tft.println();
     }
   }
 
+  screen->tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+
   if (controlState.rate_assist_switch) {
     if (refresh || controlState.Rt != lastControlState.Rt) {
       screen->tft.setCursor(0, 3*lineHeight);
       screen->tft.print("Min resp rate: ");
+      screen->tft.setCursor(columnTwo, 3*lineHeight);
       screen->padprint("%.0f bpm",controlState.Rt,6);
       screen->tft.println();
     }
@@ -247,6 +262,7 @@ void Esp32Hardware::tick() {
     if (refresh || controlState.Rie != lastControlState.Rie) {
       screen->tft.setCursor(0, 4*lineHeight);
       screen->tft.print("Resp Ratio: 1:");
+      screen->tft.setCursor(columnTwo, 4*lineHeight);
       screen->padprint("%.2f",controlState.Rie,9);
       screen->tft.println();
     }
@@ -258,30 +274,48 @@ void Esp32Hardware::tick() {
   }
 
   if (refresh) {
-    screen->tft.setCursor(0, 6*lineHeight);
-    screen->tft.println("Measurements: ");
+    for (int i=0; i<divs; i++) {
+      screen->tft.fillRect(0, 240 - (boxHeight * (3-i)), boxWidth, boxHeight-1, ILI9341_BLACK);
+      screen->tft.drawRect(0, 240 - (boxHeight * (3-i)), boxWidth, boxHeight-1, ILI9341_WHITE);
+    }
   }
 
-  if (refresh || sensorState.P != lastSensorState.P) {
-    screen->tft.setCursor(0, 6*lineHeight);
-    screen->tft.println("Measurements: ");
-    screen->tft.print("Pressure: ");
-    screen->tft.print(sensorState.P);
-    screen->tft.print("    ");
-    screen->tft.println();
+  if (refresh || sensorState.P != sensorState.P) {
+    boxTextTop(0,0);
+    screen->tft.print("Press [cc]");
+    boxTextBottom(0,0);
+    screen->padprint("%.0f",sensorState.P,4);
   }
 
-  if (refresh || sensorState.F != lastSensorState.F) {
-    screen->tft.setCursor(0, 8*lineHeight);
-    screen->tft.print("Flow: ");
+  if (refresh || sensorState.F != sensorState.F) {
+    boxTextTop(0,1);
+    screen->tft.print("Flow [cm]");
+    boxTextBottom(0,1);
     if (sensorState.F == -1) {
       screen->tft.print("ERR");
     } else {
-      screen->tft.print(sensorState.F);
+      screen->padprint("%.0f",sensorState.F,4);
     }
-    screen->tft.print("    ");
-    screen->tft.println();
   }
+
+  // if (refresh || sensorState.P != lastSensorState.P) {
+  //   screen->tft.print("Pressure: ");
+  //   screen->tft.print(sensorState.P);
+  //   screen->tft.print("    ");
+  //   screen->tft.println();
+  // }
+  //
+  // if (refresh || sensorState.F != lastSensorState.F) {
+  //   screen->tft.setCursor(0, 8*lineHeight);
+  //   screen->tft.print("Flow: ");
+  //   if (sensorState.F == -1) {
+  //     screen->tft.print("ERR");
+  //   } else {
+  //     screen->tft.print(sensorState.F);
+  //   }
+  //   screen->tft.print("    ");
+  //   screen->tft.println();
+  // }
 
   if (refresh && showMessage) {
     screen->tft.setTextColor(messageColor, ILI9341_BLACK);
@@ -302,37 +336,37 @@ void Esp32Hardware::tick() {
 
   //Tidal volume
   if (refresh || controlState.Vt != lastControlState.Vt) {
-    boxTextTop(0);
+    boxTextTop(0,2);
     screen->tft.print("TVol [cc]");
-    boxTextBottom(0);
+    boxTextBottom(0,2);
     screen->padprint("%.0f",controlState.Vt,4);
   }
 
   //Insp pressure
   if (refresh || controlState.Pt != lastControlState.Pt) {
-    boxTextTop(1);
+    boxTextTop(1,2);
     screen->tft.print("Insp [cm]");
-    boxTextBottom(1);
+    boxTextBottom(1,2);
     screen->padprint("%.2f",controlState.Pt,4);
   }
 
   //Resp rate
   if (refresh || controlState.Rt != lastControlState.Rt) {
     screen->tft.setTextColor(controlState.rate_assist_switch ? ILI9341_WHITE : ILI9341_DARKGREY, ILI9341_BLACK);
-    boxTextTop(2);
+    boxTextTop(2,2);
     screen->tft.print("Rate [bpm]");
 
-    boxTextBottom(2);
+    boxTextBottom(2,2);
     screen->padprint("%.0f",controlState.Rt,2);
   }
 
   //Inhale/Exhale Ratio
   if (refresh || controlState.Rie != lastControlState.Rie) {
     screen->tft.setTextColor(controlState.rate_assist_switch ? ILI9341_WHITE : ILI9341_DARKGREY, ILI9341_BLACK);
-    boxTextTop(3);
+    boxTextTop(3,2);
     screen->tft.print("in/ex ratio");
 
-    boxTextBottom(3);
+    boxTextBottom(3,2);
     screen->padprint("%.2f",controlState.Rie,4);
   }
 
