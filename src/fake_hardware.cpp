@@ -1,3 +1,4 @@
+/*
 #include "fake_hardware.h"
 
 
@@ -26,7 +27,7 @@ bool FakeHardware::writeIndication(const IndicationState& state) {
   return true;
 }
 
-bool FakeHardware::updateDisplay(const DisplayState& state) {
+bool FakeHardware::updateDisplay(const Statistics& state) {
   if (!update_display_return_value) return false;
   display_state = state;
   return true;
@@ -48,3 +49,4 @@ FakeHardware::FakeHardware() : HardwareInterface() {
 
 FakeHardware::~FakeHardware() {
 }
+*/

@@ -16,6 +16,9 @@ class Vent {
   HardwareInterface& hardware_;
   VentMachine machine_;
 
+  const SensorState * s;
+  const ControlState * c;
+  const ConfigState * config;
 
   bool selfTestPassed_;
   double deltaT_;

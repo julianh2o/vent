@@ -6,10 +6,10 @@
 //
 struct SensorState {
   // Momentary pressure measurement provided by P1 pressure sensor, [psi].
-  double p1;
+  double P;
 
   // Momentary flow rate provided by F1 flow meter, [cc per second].
-  double f1;
+  double F;
 };
 
 //
@@ -39,20 +39,20 @@ struct ControlState {
   TargetSwitchState target_switch;
 
   // Tidal Volume Knob Value [cc].
-  double tidal_volume;
+  double Vt;
 
   // Inspiratory Pressure Knob Value [psi].
-  double inspiratory_pressure;
+  double Pt;
 
   // RateAssist Switch Value. True if switch is in ON state,
   // false if is in OFF state.
   bool rate_assist_switch;
 
   // Respiratory Rate Knob Value, [bpm].
-  double respiratory_rate;
+  double Rt;
 
   // Inhale/Exhale Ratio Knob Value. Ranges approximately from 1:1 to 1:4.
-  double inhale_exhale_ratio;
+  double Rie;
 
   // State of End Inspiratory Pause State. True if it is down, false otherwise.
   bool end_inspiratory_pause_button_down;
@@ -75,8 +75,6 @@ struct IndicationState {
 
     // Solid RED indicates malfunction mode.
     SOLID_RED,
-
-
 
     // Blink RED indicates triggered alert.
     //BLINK_RED,
@@ -103,29 +101,15 @@ struct IndicationState {
 //
 // Information that need to be rendered on the embedded LCD display.
 //
-struct DisplayState {
-
-  // Volume or Pressure target switch position.
-  ControlState::TargetSwitchState target;
-
-  // Tidal Volume Knob Value [cc].
-  //  - If target == VOLUME then tidal_volume is the TARGET volume.
-  //  - If target == PRESSURE then tidal_volume is the ALERT volume.
-  double tidal_volume;
-
-  // Inspiratory Pressure Knob Value [psi].
-  //  - If target == VOLUME then inspiratory_pressure is the ALERT pressure.
-  //  - If target == PRESSURE then inspiratory_pressure is the TARGET volume.
-  double inspiratory_pressure;
-
+struct Statistics {
   // Minimal Respiratory Rate Knob Value.
-  double minimum_respiratory_rate;
+  double minimum_Rt;
 
   // Actual (measurement) Respiratory Rate [bpm].
-  double actual_respiratory_rate;
+  double actual_Rt;
 
   // Actual (measurement) Tidal Volume [cc].
-  double actual_tidal_volume;
+  double actual_Vt;
 
   // Peak Pressure, [psi].
   double peak_pressure;
@@ -135,30 +119,6 @@ struct DisplayState {
 
   // Peep Pressure, [psi].
   double peep_pressure;
-
-  // The flag indicates whether an alert has been triggred or not.
-  bool show_alert;
-
-  // The alert message that need to be displayed. Here are possible values (this
-  // may not exactly match):
-  //   "Inspiratory Pressure is too high!"
-  //   "Tidal Volume is too low!"
-  //   "Inhale/Exhale Volumes Mismatch!"
-  //   "Circuit Disconnect!"
-  //   "Apnea Alarm!"
-  //   "Malfunction!"
-  //   etc.
-  // The string is null terminated.
-  char alert_message[128];
-
-  // The flag that indicates that the hint message need to be shown. Hint
-  // message can occupy part or whole screem. Its purpose is to give guidance,
-  // testing direction, etc.
-  bool show_hint_message;
-
-  // The hint message to show. The message could be:
-  //  "Self-tests passed, the vent is ready. Press Start/Ack to begin."
-  char hint_message[128];
 };
 
 
@@ -177,12 +137,6 @@ struct ConfigState {
 
   // A flow meter threshold to determine absence of air flow, small positive value (~3σ);
   double f_stop;
-
-
-
-
-
-
 
   // Inspiratory Pause Delay. It helps measure plateau pressure, [seconds].
   double inspiratory_pause_delay_seconds;
@@ -215,22 +169,25 @@ class HardwareInterface {
   // gets the pointer to the current sensor state
   virtual const SensorState * getSensorState()=0;
 
-  // Controls valves. Opens or closes valves according to the passed state.
-  virtual bool setValves(bool v1, bool v2)=0;
-
   // gets the pointer to the current control state
   virtual const ControlState* getControlState()=0;
 
-  // Writes LED and Beeper values.
-  virtual bool writeIndication(const IndicationState& state)=0;
-
-  // Renders passed values on the LCD display.
-  virtual bool updateDisplay(const DisplayState& state)=0;
-
   // Returns the vent configuration which contains thresholds, constants, etc.
-
-  // TODO: return pointer to ConfigState instead of bool.
   virtual const ConfigState* getConfig()=0;
+
+  // Information that is to be logged or displayed
+  // This struct can be modified to represent changes in the statistics
+  virtual Statistics * getStatistics()=0;
+
+  // Controls valves. Opens or closes valves according to the passed state.
+  virtual void setValves(bool v1, bool v2)=0;
+
+  // Display messages to the screen and call attention using the buzzer
+  virtual void displayAlert(const char *)=0;
+  virtual void displayMessage(const char *)=0;
+
+  virtual void standbyMode()=0;
+  virtual void runningMode()=0;
 
   // This function needs to be called periodically to perform various hardware
   // functionalities.

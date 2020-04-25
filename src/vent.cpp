@@ -5,7 +5,7 @@
 #include <string>
 
 //
-// Vent Machine States, Rev 2 
+// Vent Machine States, Rev 2
 //
 #define POWER_ON_STATE 1
 #define SELF_TEST_STATE 2
@@ -47,7 +47,7 @@ static std::map<int, std::string> getStateName = {
   { VOLUME_MISMATCH_ALERT_STATE, "VOLUME_MISMATCH_ALERT_STATE" },
   { INSPIRATION_PROCESS_STATE, "INSPIRATION_PROCESS_STATE" },
   { EXPIRATION_END_STATE, "EXPIRATION_END_STATE" },
-  { HIGH_INSPIRATORY_PRESSURE_ALERT_STATE, 
+  { HIGH_INSPIRATORY_PRESSURE_ALERT_STATE,
     "HIGH_INSPIRATORY_PRESSURE_ALERT_STATE" },
   { COUGH_STATE, "COUGH_STATE" },
   { APNEA2_WARNING_STATE, "APNEA2_WARNING_STATE" },
@@ -93,22 +93,16 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
   // Malfunction State.
   //
   machine_.addState(MALFUNCTION_STATE, [&]() {
-    IndicationState malfunction;
-    malfunction.status_led_mode = IndicationState::SOLID_RED;
-    malfunction.beeper_mode = IndicationState::LONG_BEEPS;
-    hardware_.writeIndication(malfunction);
+    hardware_.displayAlert("Malfunction!");
   });
 
   //
   // Standby State.
   //
   machine_.addState(STANDBY_STATE, [&]() {
-    IndicationState state;
-    state.status_led_mode = IndicationState::SOLID_GREEN;
-    hardware_.writeIndication(state);
+    hardware_.standbyMode();
   }).addExit(LEAD_UP_PAUSE_STATE, [&]() {
-    const ControlState* state = hardware_.getControlState();
-    return state->start_ack_button_down;
+    return c->start_ack_button_down;
   });
 
   //
@@ -118,12 +112,12 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
     deltaT_ = hardware_.getSecondsSinceStart();
     hardware_.setValves(false, false);
   }).addExit(LEAD_UP_EXPIRATION_STATE, [&]() {
-    return hardware_.getSensorState()->p1  > hardware_.getConfig()->p_ex;
+    return s->P  > config->p_ex;
   }).addExit(INSPIRATION_BEGIN_STATE, [&]() {
-    return hardware_.getSensorState()->p1 < hardware_.getConfig()->p_in;
+    return s->P < config->p_in;
   }).addExit(APNEA1_WARNING_STATE, [&]() {
-    return ((hardware_.getSecondsSinceStart() - deltaT_) > 
-      hardware_.getConfig()->t_tex);
+    return ((hardware_.getSecondsSinceStart() - deltaT_) >
+      config->t_tex);
   });
 
   //
@@ -131,7 +125,7 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
   //
   machine_.addState(LEAD_UP_EXPIRATION_STATE, [&]() {
   }).addExit(LEAD_UP_PAUSE_STATE, [&]() {
-    return hardware_.getSensorState()->f1 > -hardware_.getConfig()->f_stop;
+    return s->F > -config->f_stop;
   });
 
   //
@@ -226,6 +220,11 @@ Vent::~Vent() {
 void Vent::tick() {
   hardware_.tick();
 
+  //Actually not necessary to call these every loop.... the references are static
+  s = hardware_.getSensorState();
+  c = hardware_.getControlState();
+  config = hardware_.getConfig();
+
   int prev_state = machine_.getCurrentStateId();
   int new_state = machine_.tick();
   if (new_state != prev_state) {
@@ -234,10 +233,4 @@ void Vent::tick() {
     Serial.print(getStateName[new_state].c_str());
     Serial.print("\n");
   }
-
-  
-
-
-  // Sets the indicator based on switch, beeps when buttons are pushed for demoing
-  // h.testModeTick(); 
 }

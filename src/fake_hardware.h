@@ -1,3 +1,4 @@
+/*
 #ifndef FAKE_HARDWARE_H
 #define FAKE_HARDWARE_H
 
@@ -15,7 +16,7 @@ class FakeHardware : public HardwareInterface {
   bool setValves(bool v1, bool v2) override;
   const ControlState * getControlState() override;
   bool writeIndication(const IndicationState& state) override;
-  bool updateDisplay(const DisplayState& state) override;
+  bool updateDisplay(const Statistics& state) override;
   bool getConfig(ConfigState* state);
 
   void tick();
@@ -38,10 +39,11 @@ class FakeHardware : public HardwareInterface {
   IndicationState indication_state;
 
   bool update_display_return_value;
-  DisplayState display_state;
+  Statistics display_state;
 
   bool get_config_return_value;
   ConfigState config_state;
 };
 
 #endif  // FAKE_HARDWARE_H
+*/

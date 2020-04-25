@@ -2,7 +2,6 @@
 #define BUZZER_H
 
 #include <Arduino.h>
-#include "hardware_interface.h"
 
 class DottedBeeper {
  public:
@@ -31,14 +30,15 @@ public:
   ~Buzzer();
 
   void begin();
-  void setState(IndicationState::BeeperMode state);
   void tick();
+
+  void off();
+  void shortBeeps();
+  void longBeeps();
 
 private:
   uint8_t pin;
   uint8_t channel;
-
-  IndicationState::BeeperMode state_;
 
   DottedBeeper short_beeps_;
   DottedBeeper long_beeps_;

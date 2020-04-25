@@ -27,6 +27,7 @@ void DottedBeeper::start() {
 }
 
 void DottedBeeper::stop() {
+  if (!buzzer_on_) return;
   buzzer_on_ = false;
   sound_on_ = false;
   ledcWrite(channel, 0);
@@ -51,7 +52,6 @@ void DottedBeeper::tick() {
 
 Buzzer::Buzzer(uint8_t pin, uint8_t channel) :
   pin(pin), channel(channel),
-  state_(IndicationState::OFF),
   short_beeps_(channel,SHORT_BEEP_MS, SHORT_MUTE_MS),
   long_beeps_(channel,LONG_BEEP_MS, LONG_MUTE_MS) {
 }
@@ -64,27 +64,21 @@ void Buzzer::begin() {
 }
 
 void Buzzer::tick() {
-  if (state_ == IndicationState::SHORT_BEEPS) {
-    short_beeps_.tick();
-  } else if (state_ == IndicationState::LONG_BEEPS) {
-    long_beeps_.tick();
-  }
+  short_beeps_.tick();
+  long_beeps_.tick();
 }
 
-void Buzzer::setState(IndicationState::BeeperMode state) {
-  if (state_ == state) return;
+void Buzzer::off() {
+  short_beeps_.stop();
+  long_beeps_.stop();
+}
 
-  if (state_ == IndicationState::SHORT_BEEPS) {
-    short_beeps_.stop();
-  } else if (state_ == IndicationState::LONG_BEEPS) {
-    long_beeps_.stop();
-  }
+void Buzzer::shortBeeps() {
+  short_beeps_.start();
+  long_beeps_.stop();
+}
 
-  state_ = state;
-
-  if (state_ == IndicationState::SHORT_BEEPS) {
-    short_beeps_.start();
-  } else if (state_ == IndicationState::LONG_BEEPS) {
-    long_beeps_.start();
-  }
+void Buzzer::longBeeps() {
+  short_beeps_.stop();
+  long_beeps_.start();
 }

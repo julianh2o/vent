@@ -10,6 +10,9 @@
 #include "flow_sensor.h"
 #include "vent.h"
 
+//If true, we dont run the state machine, we just test the hardware
+#define HARDWARE_TEST true
+
 Esp32Hardware hardware;
 Vent vent(&hardware);
 
@@ -19,6 +22,11 @@ void setup() {
 }
 
 void loop() {
-  vent.tick();
+  if (HARDWARE_TEST) {
+    hardware.tick();
+    hardware.testModeTick();
+  } else {
+    vent.tick();
+  }
   delay(20);
 }

@@ -20,14 +20,14 @@ TEST(FakeHardware, readSensors) {
   hw.read_sensors_return_value = false;
   EXPECT_FALSE(hw.readSensors(&state));
 
-  state.p1 = 33.0;
-  state.f1 = 44.0;
-  hw.sensor_state.p1 = 55.0;
-  hw.sensor_state.f1 = 66.0;
+  state.P = 33.0;
+  state.F = 44.0;
+  hw.sensor_state.P = 55.0;
+  hw.sensor_state.F = 66.0;
   hw.read_sensors_return_value = true;
   EXPECT_TRUE(hw.readSensors(&state));
-  EXPECT_EQ(state.p1, hw.sensor_state.p1);
-  EXPECT_EQ(state.f1, hw.sensor_state.f1);
+  EXPECT_EQ(state.P, hw.sensor_state.P);
+  EXPECT_EQ(state.F, hw.sensor_state.F);
 }
 
 TEST(FakeHardware, setValves) {
@@ -57,14 +57,14 @@ TEST(FakeHardware, readControls) {
   hw.read_controls_return_value = false;
   EXPECT_FALSE(hw.readControls(&state));
 
-  state.tidal_volume = 33.0;
-  hw.control_state.tidal_volume = 55.0;
+  state.Vt = 33.0;
+  hw.control_state.Vt = 55.0;
 
   hw.read_controls_return_value = true;
   EXPECT_TRUE(hw.readControls(&state));
 
-  EXPECT_EQ(state.tidal_volume, hw.control_state.tidal_volume);
-  EXPECT_EQ(state.tidal_volume, 55.0);
+  EXPECT_EQ(state.Vt, hw.control_state.Vt);
+  EXPECT_EQ(state.Vt, 55.0);
 }
 
 TEST(FakeHardware, writeIndication) {
@@ -86,19 +86,19 @@ TEST(FakeHardware, writeIndication) {
 
 TEST(FakeHardware, updateDisplay) {
   FakeHardware hw;
-  DisplayState state;
+  Statistics state;
 
   hw.update_display_return_value = false;
   EXPECT_FALSE(hw.updateDisplay(state));
 
-  state.tidal_volume = 33.0;
-  hw.display_state.tidal_volume = 44.0;
+  state.Vt = 33.0;
+  hw.display_state.Vt = 44.0;
 
   hw.update_display_return_value = true;
   EXPECT_TRUE(hw.updateDisplay(state));
 
-  EXPECT_EQ(state.tidal_volume, hw.display_state.tidal_volume);
-  EXPECT_EQ(hw.display_state.tidal_volume, 33.0);
+  EXPECT_EQ(state.Vt, hw.display_state.Vt);
+  EXPECT_EQ(hw.display_state.Vt, 33.0);
 }
 
 TEST(FakeHardware, getConfig) {

@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 
+#define MESSAGE_SIZE 150
+
 class Esp32Hardware : public HardwareInterface {
 
 public:
@@ -28,11 +30,20 @@ public:
   ControlState * getControlState() override;
   void updateControlState();
 
-  // Harware Outputs.
-  bool setValves(bool v1, bool v2) override;
-  bool writeIndication(const IndicationState& state) override;
-  bool updateDisplay(const DisplayState& state) override;
   const ConfigState* getConfig() override;
+
+  Statistics * getStatistics() override;
+
+  void setValves(bool v1, bool v2) override;
+
+  void setGreen(bool state);
+  void setRed(bool state);
+
+  void displayAlert(const char *) override;
+  void displayMessage(const char *) override;
+
+  void standbyMode() override;
+  void runningMode() override;
 
   void begin();
   void runTest();
@@ -50,6 +61,10 @@ public:
   SensorState sensorState;
   SensorState lastSensorState;
 
+  ConfigState configState;
+
+  Statistics statistics;
+
   PortExpander ports;
   Multiplexer mux;
   Buzzer buzzer;
@@ -58,12 +73,15 @@ public:
   ButtonDebouncer start;
   ButtonDebouncer pause;
 
-  ConfigState configState;
 
 private:
   void boxTextTop(uint8_t n);
   void boxTextBottom(uint8_t n);
   time_t bootTimestamp;
+
+  bool showMessage;
+  uint16_t messageColor;
+  char message [MESSAGE_SIZE];
 };
 
 #endif  // ESP32_HARDWARE_H
