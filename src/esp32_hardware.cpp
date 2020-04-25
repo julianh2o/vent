@@ -47,7 +47,7 @@ bool Esp32Hardware::readSensors(SensorState* state) {
   const uint16_t pressureMax = 400; //mm H2o
   const float offsetVoltagetTypical = .6f;
   const float offset = offsetVoltagetTypical / 3.3F;
-  state->P = ((float)pressureMax * (offset + (analogRead(PRESSURE_1)/4095.0))) / 10.0;
+  state->P = ((float)pressureMax * (-offset + (analogRead(PRESSURE_1)/4095.0))) / 10.0;
 
   // flow
   //flow [slm] = (measured value - offset flow ) / scale factor flow
