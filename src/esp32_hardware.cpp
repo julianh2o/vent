@@ -174,6 +174,14 @@ void Esp32Hardware::testModeTick() {
   } else {
     setValves(false,false);
   }
+
+  if (controlState.rate_assist_switch) {
+    ports.digitalWrite(PORTS_F1_PWR, 0);
+    ports.digitalWrite(PORTS_F1_HTR, 0);
+  } else {
+    ports.digitalWrite(PORTS_F1_PWR, 1);
+    ports.digitalWrite(PORTS_F1_HTR, 1);
+  }
 }
 
 void Esp32Hardware::boxTextTop(uint8_t x, uint8_t y) {
