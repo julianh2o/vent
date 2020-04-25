@@ -43,13 +43,16 @@ bool Esp32Hardware::readSensors(SensorState* state) {
   //pressure
   // See https://www.nxp.com/docs/en/data-sheet/MP3V5004G.pdf
   //TODO needs to be scaled by calibration values and probably the offset value
+  //Let's do all of this in a lookup table
   const uint16_t pressureMax = 400; //mm H2o
-  state->P = (400.0 * analogRead(PRESSURE_1)/4095.0) / 10;
+  const float offsetVoltagetTypical = .6f;
+  const float offset = offsetVoltagetTypical / 3.3F;
+  state->P = ((float)pressureMax * (offset + (analogRead(PRESSURE_1)/4095.0))) / 10.0;
 
   // flow
   //flow [slm] = (measured value - offset flow ) / scale factor flow
   // https://www.sensirion.com/fileadmin/user_upload/customers/sensirion/Dokumente/5_Mass_Flow_Meters/Datasheets/Sensirion_Mass_Flow_Meters_SFM3300_Datasheet.pdf
-  state->F = (flow1.read() - 32768) / 120;
+  state->F = (flow1.read() - 32768.0) / 120.0;
 
   return false;
 }
