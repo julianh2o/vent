@@ -71,10 +71,11 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
   // Power On State:
   //
   machine_.addState(POWER_ON_STATE, []() {
-  }).addExit(SELF_TEST_STATE, []() {
+  }).addExit(STANDBY_STATE, []() {
     return true;
   });
 
+/*
   //
   // Self-test State:
   //
@@ -94,56 +95,34 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
   //
   machine_.addState(MALFUNCTION_STATE, [&]() {
     hardware_.displayAlert("Malfunction!");
-  });
+  });*/
 
   //
   // Standby State.
   //
   machine_.addState(STANDBY_STATE, [&]() {
     hardware_.standbyMode();
-  }).addExit(LEAD_UP_PAUSE_STATE, [&]() {
+  }).addExit(INSPIRATION_BEGIN_STATE, [&]() {
     return c->start_ack_button_down;
   });
 
   //
-  // Leadup Pause State.
+  // Simplified inspiration cycle.
   //
-  machine_.addState(LEAD_UP_PAUSE_STATE, [&]() {
-    deltaT_ = hardware_.getSecondsSinceStart();
-    hardware_.setValves(false, false);
-  }).addExit(LEAD_UP_EXPIRATION_STATE, [&]() {
-    return s->P  > config->p_ex;
+  machine_.addState(INSPIRATION_BEGIN_STATE, [&]() {
+    hardware_.setValves(true, false);
+  }).addExit(EXPIRATION_BEGIN_STATE, [&]() {
+    return ((hardware_.getSecondsSinceStart() - deltaT_) > 1.0);
+  });
+
+  machine_.addState(EXPIRATION_BEGIN_STATE, [&]() {
+    hardware_.setValves(false, true);
   }).addExit(INSPIRATION_BEGIN_STATE, [&]() {
-    return s->P < config->p_in;
-  }).addExit(APNEA1_WARNING_STATE, [&]() {
-    return ((hardware_.getSecondsSinceStart() - deltaT_) >
-      config->t_tex);
+    return ((hardware_.getSecondsSinceStart() - deltaT_) > 2.0);
+  }).addExit(STANDBY_STATE, [&]() {
+    return c->start_ack_button_down;
   });
 
-  //
-  // Leadup Expiration State.
-  //
-  machine_.addState(LEAD_UP_EXPIRATION_STATE, [&]() {
-  }).addExit(LEAD_UP_PAUSE_STATE, [&]() {
-    return s->F > -config->f_stop;
-  });
-
-  //
-  // Apnea Warning.
-  //
-  machine_.addState(APNEA1_WARNING_STATE, []() {
-    // TODO: add apnea indication here.
-  }).addExit(INSPIRATION_BEGIN_STATE, []() {
-    return true;
-  });
-
-  //
-  // Inspiration begin phase.
-  //
-  machine_.addState(INSPIRATION_BEGIN_STATE, []() {
-  }).addExit(DUMMY_STATE, []() {
-    return true;
-  });
   machine_.addState(RATE_CHECK_STATE, []() {
   }).addExit(DUMMY_STATE, []() {
     return true;
@@ -204,10 +183,7 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
   }).addExit(DUMMY_STATE, []() {
     return true;
   });
-  machine_.addState(EXPIRATION_BEGIN_STATE, []() {
-  }).addExit(DUMMY_STATE, []() {
-    return true;
-  });
+
 
 
   // Start from Power On State.
@@ -228,6 +204,8 @@ void Vent::tick() {
   int prev_state = machine_.getCurrentStateId();
   int new_state = machine_.tick();
   if (new_state != prev_state) {
+    deltaT_ = hardware_.getSecondsSinceStart();
+
     Serial.print(getStateName[prev_state].c_str());
     Serial.print(" -> ");
     Serial.print(getStateName[new_state].c_str());
