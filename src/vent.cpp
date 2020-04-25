@@ -75,35 +75,14 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
     return true;
   });
 
-/*
-  //
-  // Self-test State:
-  //
-  machine_.addState(SELF_TEST_STATE, [&]() {
-    //
-    // TODO: call self test routine here. For now assume they passed:
-    //
-    selfTestPassed_ = true;
-  }).addExit(MALFUNCTION_STATE, [&]() {
-    return !selfTestPassed_;
-  }).addExit(STANDBY_STATE, [&]() {
-    return selfTestPassed_;
-  });
-
-  //
-  // Malfunction State.
-  //
-  machine_.addState(MALFUNCTION_STATE, [&]() {
-    hardware_.displayAlert("Malfunction!");
-  });*/
-
   //
   // Standby State.
   //
   machine_.addState(STANDBY_STATE, [&]() {
     hardware_.standbyMode();
   }).addExit(INSPIRATION_BEGIN_STATE, [&]() {
-    return c->start_ack_button_down;
+    return (((hardware_.getSecondsSinceStart() - deltaT_) > 1.5) && 
+      c->start_ack_button_down);
   });
 
   //
@@ -113,6 +92,8 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
     hardware_.setValves(true, false);
   }).addExit(EXPIRATION_BEGIN_STATE, [&]() {
     return ((hardware_.getSecondsSinceStart() - deltaT_) > 1.0);
+  }).addExit(COUGH_STATE, [&]() {
+    return s.P > 4000;
   });
 
   machine_.addState(EXPIRATION_BEGIN_STATE, [&]() {
@@ -121,6 +102,14 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
     return ((hardware_.getSecondsSinceStart() - deltaT_) > 2.0);
   }).addExit(STANDBY_STATE, [&]() {
     return c->start_ack_button_down;
+  });
+
+  //
+  // Cough state.
+  //
+  machine_.addState(COUGH_STATE, []() {
+  }).addExit(INSPIRATION_BEGIN_STATE, []() {
+    return ((hardware_.getSecondsSinceStart() - deltaT_) > 5.0);
   });
 
   machine_.addState(RATE_CHECK_STATE, []() {
@@ -143,10 +132,7 @@ Vent::Vent(HardwareInterface* hardware) : hardware_(*hardware) {
   }).addExit(DUMMY_STATE, []() {
     return true;
   });
-  machine_.addState(COUGH_STATE, []() {
-  }).addExit(DUMMY_STATE, []() {
-    return true;
-  });
+
   machine_.addState(APNEA2_WARNING_STATE, []() {
   }).addExit(DUMMY_STATE, []() {
     return true;
