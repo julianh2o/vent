@@ -41,10 +41,15 @@ double Esp32Hardware::getSecondsSinceStart() {
 
 bool Esp32Hardware::readSensors(SensorState* state) {
   //pressure
-  state->P = analogRead(PRESSURE_1);
+  // See https://www.nxp.com/docs/en/data-sheet/MP3V5004G.pdf
+  //TODO needs to be scaled by calibration values and probably the offset value
+  const uint16_t pressureMax = 400; //mm H2o
+  state->P = (400.0 * analogRead(PRESSURE_1)/4095.0) / 10;
 
   // flow
-  state->F = flow1.read();
+  //flow [slm] = (measured value - offset flow ) / scale factor flow
+  // https://www.sensirion.com/fileadmin/user_upload/customers/sensirion/Dokumente/5_Mass_Flow_Meters/Datasheets/Sensirion_Mass_Flow_Meters_SFM3300_Datasheet.pdf
+  state->F = (flow1.read() - 32768) / 120;
 
   return false;
 }
@@ -285,7 +290,7 @@ void Esp32Hardware::tick() {
     boxTextTop(0,0);
     screen->tft.print("Press [cc]");
     boxTextBottom(0,0);
-    screen->padprint("%.0f",sensorState.P,4);
+    screen->padprint("%.1f",sensorState.P,4);
   }
 
   if (refresh || sensorState.F != lastSensorState.F) {
@@ -298,25 +303,6 @@ void Esp32Hardware::tick() {
       screen->padprint("%.0f",sensorState.F,4);
     }
   }
-
-  // if (refresh || sensorState.P != lastSensorState.P) {
-  //   screen->tft.print("Pressure: ");
-  //   screen->tft.print(sensorState.P);
-  //   screen->tft.print("    ");
-  //   screen->tft.println();
-  // }
-  //
-  // if (refresh || sensorState.F != lastSensorState.F) {
-  //   screen->tft.setCursor(0, 8*lineHeight);
-  //   screen->tft.print("Flow: ");
-  //   if (sensorState.F == -1) {
-  //     screen->tft.print("ERR");
-  //   } else {
-  //     screen->tft.print(sensorState.F);
-  //   }
-  //   screen->tft.print("    ");
-  //   screen->tft.println();
-  // }
 
   if (refresh && showMessage) {
     screen->tft.setTextColor(messageColor, ILI9341_BLACK);
