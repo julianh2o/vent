@@ -15,8 +15,8 @@
 
 #define MESSAGE_SIZE 150
 
-#define HISTORY_SIZE 100
-#define HISTORY_INTERVAL 1000
+#define HISTORY_SIZE 200
+#define HISTORY_INTERVAL 200
 
 class Esp32Hardware : public HardwareInterface {
 
@@ -80,8 +80,10 @@ public:
 
 
 private:
+  void recordHistory();
   void boxTextTop(uint8_t x, uint8_t y);
   void boxTextBottom(uint8_t x, uint8_t y);
+  void drawChart(bool refresh);
   time_t bootTimestamp;
 
   bool showMessage;
@@ -89,6 +91,9 @@ private:
   char message [MESSAGE_SIZE];
 
   unsigned long lastHistoryRecord;
+  uint16_t nextHistoryIndex;
+  uint16_t firstHistoryIndex;
+  bool newHistoryFrame;
 };
 
 #endif  // ESP32_HARDWARE_H

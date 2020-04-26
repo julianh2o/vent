@@ -13,6 +13,19 @@ const uint8_t boxOriginX = 0;
 const uint8_t boxOriginY = 240 - boxHeight * 3;
 const uint8_t boxPadding = 3;
 
+//Perform a simple linear scale for our dials
+//TODO make this an instance function?
+double normalizeDial(double min, double max, int value, double divisions, bool invert) {
+  double normalizedInput = ((double)value - DIAL_MIN) / (DIAL_MAX - DIAL_MIN);
+  if (normalizedInput < 0) normalizedInput = 0;
+  if (normalizedInput > 1) normalizedInput = 1;
+  if (invert) normalizedInput = 1-normalizedInput;
+  double normalizedOutput = min + normalizedInput * (max - min);
+  int n = normalizedOutput / divisions;
+  normalizedOutput = n * divisions;
+  return normalizedOutput;
+}
+
 void Esp32Hardware::restartUptime() {
   timeval tv;
   gettimeofday(&tv, NULL);
@@ -66,18 +79,6 @@ void Esp32Hardware::updateSensorState() {
 void Esp32Hardware::setValves(bool v1, bool v2) {
   ports.digitalWrite(PORTS_24V_1,v1);
   ports.digitalWrite(PORTS_24V_2,v2);
-}
-
-//Perform a simple linear scale for our dials
-double normalizeDial(double min, double max, int value, double divisions, bool invert) {
-  double normalizedInput = ((double)value - DIAL_MIN) / (DIAL_MAX - DIAL_MIN);
-  if (normalizedInput < 0) normalizedInput = 0;
-  if (normalizedInput > 1) normalizedInput = 1;
-  if (invert) normalizedInput = 1-normalizedInput;
-  double normalizedOutput = min + normalizedInput * (max - min);
-  int n = normalizedOutput / divisions;
-  normalizedOutput = n * divisions;
-  return normalizedOutput;
 }
 
 bool Esp32Hardware::readControls(ControlState* state) {
@@ -192,12 +193,42 @@ void Esp32Hardware::boxTextBottom(uint8_t x, uint8_t y) {
     Screen::getInstance()->tft.setTextSize(3);
 }
 
-void Esp32Hardware::tick() {
+void Esp32Hardware::recordHistory() {
+  unsigned long now = millis();
+  if (lastHistoryRecord + HISTORY_INTERVAL < now) {
+    lastHistoryRecord = now;
+    newHistoryFrame = true;
 
+    // Serial.print("before nextHisotryIndex: ");
+    // Serial.print(nextHistoryIndex);
+    // Serial.print(" firstHistoryIndex: ");
+    // Serial.print(firstHistoryIndex);
+    // Serial.println();
+
+    SensorState * historyItem = &sensorHistory[nextHistoryIndex];
+
+    historyItem->P = sensorState.P;
+    historyItem->F = sensorState.F;
+
+    nextHistoryIndex ++;
+    if (nextHistoryIndex > HISTORY_SIZE) nextHistoryIndex = 0;
+    if (firstHistoryIndex == nextHistoryIndex) firstHistoryIndex ++;
+
+    // Serial.print("before nextHisotryIndex: ");
+    // Serial.print(nextHistoryIndex);
+    // Serial.print(" firstHistoryIndex: ");
+    // Serial.print(firstHistoryIndex);
+    // Serial.println();
+  }
+}
+
+void Esp32Hardware::tick() {
   Screen* screen = Screen::getInstance();
   buzzer.tick();
   updateControlState();
   updateSensorState();
+
+  recordHistory();
 
   bool refresh = false;
   if (forceRefresh || controlState.target_switch != lastControlState.target_switch || controlState.rate_assist_switch != lastControlState.rate_assist_switch) {
@@ -366,6 +397,8 @@ void Esp32Hardware::tick() {
     screen->padprint("%.2f",controlState.Rie,4);
   }
 
+  drawChart(refresh);
+
   lastControlState.target_switch = controlState.target_switch;
   lastControlState.Vt = controlState.Vt;
   lastControlState.Pt = controlState.Pt;
@@ -379,11 +412,48 @@ void Esp32Hardware::tick() {
   lastSensorState.F = sensorState.F;
 }
 
+void Esp32Hardware::drawChart(bool refresh) {
+  Screen* screen = Screen::getInstance();
+  const uint16_t chartOffsetX = boxWidth+3;
+  const uint16_t chartOffsetY = 240 - boxHeight * 3;
+  const uint16_t chartHeight = boxHeight * 2 - 3;
+  const uint16_t chartWidth = min(HISTORY_SIZE,320-chartOffsetX);
+
+  if (refresh) {
+    screen->tft.fillRect(chartOffsetX,chartOffsetY, chartWidth, chartHeight, ILI9341_BLACK);
+    screen->tft.drawRect(chartOffsetX-1,chartOffsetY-1, chartWidth+2, chartHeight+2, ILI9341_WHITE);
+  }
+
+  screen->tft.startWrite();
+  for (uint16_t i=0; i<HISTORY_SIZE; i++) {
+    if (!refresh && i != nextHistoryIndex-1 && !newHistoryFrame) continue;
+    if (i == 0) continue;
+
+    screen->tft.writeFastVLine(chartOffsetX+i-1,chartOffsetY,chartHeight,ILI9341_BLACK);
+    screen->tft.writeFastVLine(chartOffsetX+i,chartOffsetY,chartHeight,ILI9341_BLACK);
+
+    uint16_t plotPp = (40.0/chartHeight) * sensorHistory[i-1].P;
+    uint16_t plotP = (40.0/chartHeight) * sensorHistory[i].P;
+    // Serial.print("plot: ");
+    // Serial.print(i);
+    // Serial.print(" ");
+    // Serial.print(plotP);
+    // Serial.println();
+    screen->tft.writeLine(chartOffsetX+i-1,chartOffsetY+chartHeight-plotPp,chartOffsetX+i,chartOffsetY+chartHeight-plotP,ILI9341_WHITE);
+    if (!refresh) newHistoryFrame = false;
+  }
+  screen->tft.endWrite();
+}
+
 Esp32Hardware::Esp32Hardware() : HardwareInterface(),
   ports(I2C_1_SDA,I2C_1_SCL,IO_RST),
   mux(MUX0,MUX1,MUX2,MUXIO),
   buzzer(BUZZER_PIN,0),
   flow1() {
+
+  lastHistoryRecord = 0;
+  nextHistoryIndex = 0;
+  firstHistoryIndex = 0;
 
   forceRefresh = true;
 
@@ -392,7 +462,6 @@ Esp32Hardware::Esp32Hardware() : HardwareInterface(),
   configState.p_ex = 3900.;
   configState.t_tex = 2.0; // TODO: Calculate this on control change
   configState.f_stop = 3.0;
-
 }
 
 void Esp32Hardware::begin() {
